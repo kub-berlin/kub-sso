@@ -1,0 +1,6 @@
+Name: Support for authentication by KuB-SSO
+Default: yes
+Priority: 300
+Auth-Type: Primary
+Auth:
+	optional	pam_script.so dir=/usr/lib/kub-sso
