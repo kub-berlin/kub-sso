@@ -1,0 +1,20 @@
+[Unit]
+Description=kub-sso
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=python3 -m kub_sso --port 8006
+Restart=always
+
+# Hardening
+DynamicUser=true
+ProtectHome=true
+CapabilityBoundingSet=
+SystemCallFilter=@system-service
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictNamespaces=true
+MemoryDenyWriteExecute=true
+
+[Install]
+WantedBy=multi-user.target

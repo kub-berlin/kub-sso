@@ -1,0 +1,16 @@
+pkgname='kub-sso-server'
+pkgver='0.0.0'
+pkgdesc='Single sign-on for KuB'
+arch=('all')
+depends=(
+	'python3-aiohttp'
+	'python3-toml'
+)
+
+package() {
+	target="$pkgdir/usr/lib/python3/dist-packages/kub_sso"
+	install -D -m 644 __init__.py "$target/__init__.py"
+	install -D -m 644 __main__.py "$target/__main__.py"
+	install -D -m 644 backends.py "$target/backends.py"
+	install -D -m 644 kub-sso.service "$pkgdir/etc/systemd/system/kub-sso.service"
+}
