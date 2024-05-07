@@ -36,12 +36,21 @@ create_encrypted_home() {
 	chown -R "$USER:$USER" "/home/.ecryptfs/$USER"
 }
 
+create_netzordner_mountpoint() {
+	mkdir -p "/media/$USER/int"
+	mkdir -p "/media/$USER/netzordner"
+	chmod 750 "/media/$USER"
+	setfacl -m "u:$USER:rx" "/media/$USER"
+	chown "$USER:$USER" "/media/$USER/int"
+}
+
 if [ "$UID" -lt 1000 ]; then
 	echo "UID too low" >&2
 	exit 1
 elif ! id "$USER" 2>&1 > /dev/null; then
 	create_user
 	create_encrypted_home
+	create_netzordner_mountpoint
 elif [ "$(id -u "$USER")" != "$UID" ]; then
 	echo "UID does not match" >&2
 	exit 1
