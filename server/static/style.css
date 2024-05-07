@@ -1,0 +1,42 @@
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    background-color: #eee;
+    font-family: sans-serif;
+    margin-inline: 0.5em;
+    font-size: clamp(1rem, calc(1rem + 0.5vi), 1.4rem);
+}
+
+body {
+    box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.5);
+    background: #fff;
+    max-width: 20em;
+    padding: 2em;
+    border-radius: 1em;
+    margin-block: 4em;
+    margin-inline: auto;
+}
+
+img,
+label,
+input,
+button {
+    display: block;
+    inline-size: 100%;
+}
+img,
+label {
+    margin-block-end: 1em;
+}
+input,
+button {
+    font: inherit;
+    padding-inline: 0.5em;
+    padding-block: 0.2em;
+}
+
+.error {
+    color: darkred;
+}

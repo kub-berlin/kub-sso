@@ -1,9 +1,11 @@
 import argparse
+from pathlib import Path
 
 import toml
 from aiohttp import web
 
 from . import backends
+from . import oidc
 
 
 async def pam_handler(request):
@@ -40,7 +42,12 @@ if __name__ == '__main__':
         backends.make_internal_password_interactive()
 
     app = web.Application()
+    app['dir'] = Path(__file__).parent
     with open(args.config) as fh:
         app['config'] = toml.load(fh)
     app.router.add_post('/pam/', pam_handler)
+    app.router.add_get('/login/', oidc.login_get)
+    app.router.add_post('/login/', oidc.login_post)
+    app.router.add_post('/token/', oidc.token_handler)
+    app.router.add_static('/static/', app['dir'] / 'static')
     web.run_app(app, host='localhost', port=args.port)
