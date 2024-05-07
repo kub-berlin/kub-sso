@@ -1,0 +1,25 @@
+[server]
+# secret used to sign tokens and cookies
+secret = "CHANGEME"
+# used for the roundcube authentication backend
+roundcube_url = "https://webmail.jpberlin.de/roundcube/"
+
+[clients.example]
+# can be generated with `python3 -m kub_sso --password`
+secret = "pbkdf2_sha256$500000$PepXJ7amv72VqqI98sTN9w==$G7E7PBgy6wfxQE7iOf7nTogzTUqQQ8OknhzQVLOKuk4="
+# see https://www.rfc-editor.org/rfc/rfc6749#section-3.1.2
+redirect_uri = "https://example.com"
+
+[users.test]
+full_name = "Test User"
+email = "test@example.com"
+unix_id = 1008
+unix_groups = ["test"]
+clients = ["example"]
+
+# choose one of these authentication backends:
+# - internal: use the `auth_password` field (can be generated with `python3 -m kub_sso --password`)
+# - unix: use a local account on the server
+# - roundcube: use the roundcube login at `server.roundcube_url` (`email` must be defined)
+auth = "internal"
+auth_password = "pbkdf2_sha256$500000$PepXJ7amv72VqqI98sTN9w==$G7E7PBgy6wfxQE7iOf7nTogzTUqQQ8OknhzQVLOKuk4="
