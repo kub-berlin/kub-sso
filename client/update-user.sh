@@ -7,7 +7,7 @@ create_user() {
 }
 
 update_user() {
-	usermod --groups "$GROUPS" "$USER"
+	usermod --groups "$GROUPS" --expiredate "$(date -d +7days +%Y-%m-%d)" "$USER"
 	echo "$USER:$PASSWORD" | chpasswd
 }
 
