@@ -40,6 +40,7 @@ try:
         'UID': str(data['uid']),
         'FULLNAME': data['full_name'],
         'GROUPS': ','.join(data['groups']),
+        'ECRYPTFS_PASSPHRASE': data['ecryptfs_passphrase'],
     })
 except Exception as e:
     print(f'SSO failed: {e}')

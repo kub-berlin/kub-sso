@@ -28,6 +28,7 @@ async def pam_handler(request):
         'uid': user_config['unix_id'],
         'full_name': user_config.get('full_name', ''),
         'groups': user_config.get('unix_groups', []),
+        'ecryptfs_passphrase': user_config['ecryptfs_passphrase'],
     })
 
 

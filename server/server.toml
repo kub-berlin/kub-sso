@@ -19,6 +19,11 @@ unix_id = 1008
 unix_groups = ["test"]
 clients = ["example"]
 
+# NOTE: this is the actual passphrase used to encrypt the user home.
+# It is encrypted with the user password and then stored on the devices.
+# We need it unencrypted here so we can update the devices when the user password changes.
+ecryptfs_passphrase = "2af2cd69172859a84ed65db06e9b2477"
+
 # choose one of these authentication backends:
 # - internal: use the `auth_password` field (can be generated with `python3 -m kub_sso --password`)
 # - unix: use a local account on the server

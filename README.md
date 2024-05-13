@@ -23,10 +23,6 @@ available.
 -   The authentication server is available on the network, so attacking it is
     much simpler than attacking local user accounts.
 
--   Home directories are encrypted using ecryptfs. When the password is
-    changed, the user needs to manually run `ecryptfs-rewrap-passphrase
-    "$HOME/.ecryptfs/wrapped-passphrase"`.
-
 -   In order to contact the server, the computer needs a network connection
     before login.
 
@@ -50,3 +46,4 @@ and the network. Possible attacks include:
 -   Enumerate users
     -   Mitigation: The Server gives the same response on all errors
 -   Brute force passwords
+-   Home decryption if the attacker gains access to the server configuration (the encryption passphrases are stored and transmitted in plain text)

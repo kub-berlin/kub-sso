@@ -2,6 +2,9 @@
 
 set -e
 
+CRYPTDIR="/home/.ecryptfs/$USER/.Private"
+CONFIGDIR="/home/.ecryptfs/$USER/.ecryptfs"
+
 create_user() {
 	adduser --uid "$UID" --gecos "$FULLNAME,,," "$USER" --disabled-password --no-create-home
 }
@@ -12,9 +15,6 @@ update_user() {
 }
 
 create_encrypted_home() {
-	CRYPTDIR="/home/.ecryptfs/$USER/.Private"
-	CONFIGDIR="/home/.ecryptfs/$USER/.ecryptfs"
-
 	mkdir -p -m 700 "/home/$USER"
 	mkdir -p -m 700 "$CRYPTDIR"
 	mkdir -p -m 700 "$CONFIGDIR"
@@ -26,14 +26,20 @@ create_encrypted_home() {
 	chmod 500 "/home/$USER"
 	chown -R "$USER:$USER" "/home/$USER"
 
-	MOUNTPASS=$(od -x -N 16 --width=16 /dev/random | head -n 1 | sed "s/^0000000//" | sed "s/\s*//g")
-	printf "%s" "$MOUNTPASS" | ecryptfs-add-passphrase --fnek - | sed 's/.*\[//;s/\].*//' > "$CONFIGDIR/Private.sig"
-	printf "%s\n%s" "$MOUNTPASS" "$PASSWORD" | ecryptfs-wrap-passphrase "$CONFIGDIR/wrapped-passphrase" -
-	chmod 400 "$CONFIGDIR/wrapped-passphrase"
 	echo "/home/$USER" > "$CONFIGDIR/Private.mnt"
 	touch "$CONFIGDIR/auto-mount"
 	touch "$CONFIGDIR/auto-umount"
 	chown -R "$USER:$USER" "/home/.ecryptfs/$USER"
+}
+
+update_encrypted_home() {
+	if [ -f "$CONFIGDIR/wrapped-passphrase" ]; then
+		chmod 600 "$CONFIGDIR/wrapped-passphrase"
+	fi
+	printf "%s" "$ECRYPTFS_PASSPHRASE" | ecryptfs-add-passphrase --fnek - | sed 's/.*\[//;s/\].*//' > "$CONFIGDIR/Private.sig"
+	printf "%s\n%s" "$ECRYPTFS_PASSPHRASE" "$PASSWORD" | ecryptfs-wrap-passphrase "$CONFIGDIR/wrapped-passphrase" -
+	chmod 400 "$CONFIGDIR/wrapped-passphrase"
+	chown -R "$USER:$USER" "$CONFIGDIR"
 }
 
 create_netzordner_mountpoint() {
@@ -57,3 +63,4 @@ elif [ "$(id -u "$USER")" != "$UID" ]; then
 fi
 
 update_user
+update_encrypted_home
