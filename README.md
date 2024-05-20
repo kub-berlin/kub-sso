@@ -23,12 +23,23 @@ the server is not available.
     changed, the user needs to manually run `ecryptfs-rewrap-passphrase
     "$HOME/.ecryptfs/wrapped-passphrase"`.
 
--   Since the PAM module creates a local account, deleting a central account
-    or changing its password currently has little effect because the clients
-    can just continue to use the local account.
-
--   When a central account is deleted, local accounts and home directories are
-    not deleted automatically.
-
 -   In order to contact the server, the computer needs a network connection
     before login.
+
+## Threat model
+
+We assume that an attacker has unlimited (non-root) access to a client device
+and the network.
+
+-   Denial of service by blocking access to the authentication server
+    -   Mitigation (PAM): Local accounts are available for 7 days
+-   Denial of service by triggering DDoS protection
+-   Login with outdated password if local account has not yet been updated (PAM)
+    -   Mitigation: Local accounts expire after 7 days
+-   Changes to local account are overwritten by SSO (PAM)
+    -   Mitigation: Exclude local accounts from SSO by adding them to `BLOCKED_USERS`
+-   Gain access by replacing the authentication server
+    -   Mitigation: Use a valid TLS certficate on the authentication server
+-   Gain superuser access by replacing the authentication server
+    -   Mitigation (PAM): Some users and groups are blocked from SSO (root, sudo, wheel)
+-   Gain access with incorrect password due to incorrect (or outdated) implementation of authentication backends
