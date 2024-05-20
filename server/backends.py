@@ -76,13 +76,13 @@ async def check_roundcube_password(url, username, password):
             if not token:
                 raise ValueError('Failed to get roundcube token')
 
-        async with session.post(url, data={
+        async with session.post(url, allow_redirects=False, data={
             '_action': 'login',
             '_user': username,
             '_pass': password,
             '_token': token[1].decode('ascii'),
         }) as r:
-            return r.status == 200
+            return r.status == 302 and '_task=mail' in r.headers.get('Location', '')
 
 
 async def _auth(username, password, config):
