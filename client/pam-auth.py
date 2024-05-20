@@ -14,7 +14,7 @@ try:
     username = os.environ['PAM_USER']
     password = os.environ['PAM_AUTHTOK']
 except KeyError:
-    sys.exit(0)
+    sys.exit(1)
 
 if username in BLOCKED_USERS:
     sys.exit(1)
