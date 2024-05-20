@@ -99,6 +99,6 @@ async def _auth(username, password, config):
 async def auth(username, password, config):
     try:
         return await _auth(username, password, config)
-    except Exception as e:
+    except Exception:
         logger.exception('Authentication failed')
         return None
