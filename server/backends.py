@@ -54,9 +54,16 @@ async def check_unix_password(username, password):
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
+        env={'LC_ALL': 'C'},
     )
     stdout, stderr = await proc.communicate(password.encode())
-    return proc.returncode == 0
+    if proc.returncode == 0:
+        if stdout != b'':
+            raise ValueError(stdout)
+        if stderr != b'Password: ':
+            raise ValueError(stderr)
+        return True
+    return False
 
 
 async def check_roundcube_password(url, username, password):
