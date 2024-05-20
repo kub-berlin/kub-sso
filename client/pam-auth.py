@@ -7,12 +7,17 @@ import sys
 import requests
 
 SERVER = 'https://example.com/sso/pam/'
+BLOCKED_USERS = ['root', 'admin']
+BLOCKED_GROUPS = ['sudo', 'wheel']
 
 try:
     username = os.environ['PAM_USER']
     password = os.environ['PAM_AUTHTOK']
 except KeyError:
     sys.exit(0)
+
+if username in BLOCKED_USERS:
+    sys.exit(1)
 
 try:
     r = requests.post(SERVER, data={
@@ -22,6 +27,10 @@ try:
 
     r.raise_for_status()
     data = r.json()
+
+    for group in data['groups']:
+        if group in BLOCKED_GROUPS:
+            raise ValueError(f'blocked group: {group}')
 
     # pass parameters in env because /proc/*/environ is only readable by
     # owner, while /proc/*/cmdline is world-readable
