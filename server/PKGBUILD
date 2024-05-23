@@ -1,3 +1,5 @@
+# https://gist.github.com/xi/6bc37c57498ec649b2775647b63bd9e0
+
 pkgname='kub-sso-server'
 pkgver='0.0.0'
 pkgdesc='Single sign-on for KuB'
