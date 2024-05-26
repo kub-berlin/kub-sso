@@ -1,11 +1,11 @@
 # https://www.rfc-editor.org/rfc/rfc6749
 # https://openid.net/specs/openid-connect-core-1_0.html
 
-import base64
 import datetime
 import urllib.parse
 
 import jwt
+from aiohttp import BasicAuth
 from aiohttp import web
 
 from . import backends
@@ -131,23 +131,17 @@ async def login_post(request):
         return response
 
 
-def basic_auth(request) -> tuple[str, str]:
-    h = request.headers['Authorization']
-    if not h.startswith('Basic '):
-        raise ValueError
-    s = base64.b64decode(h.removeprefix('Basic ')).decode('utf-8')
-    return s.split(':', 1)
-
-
 async def token_handler(request):
     config = request.app['config']
 
     try:
-        client_id, client_secret = basic_auth(request)
+        h = request.headers['Authorization']
+        auth = BasicAuth.decode(h)
+        client_id = auth.login
         client = config['clients'][client_id]
     except Exception as e:
         raise web.HTTPUnauthorized from e
-    if not backends.check_internal_password(client['secret'], client_secret):
+    if not backends.check_internal_password(client['secret'], auth.password):
         raise web.HTTPUnauthorized
 
     post_data = await request.post()
