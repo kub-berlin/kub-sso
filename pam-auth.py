@@ -6,7 +6,7 @@ import sys
 
 import requests
 
-SERVER = 'https://kub.dyndns.berlin/sso/pam/'
+SERVER = 'https://example.com/sso/pam/'
 
 try:
     username = os.environ['PAM_USER']
