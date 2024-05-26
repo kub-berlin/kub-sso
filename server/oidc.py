@@ -39,39 +39,11 @@ def get_code(encoded: str, client_id: str, config: dict) -> dict:
     return jwt.decode(encoded, secret, audience=client_id, algorithms=['HS256'])
 
 
-def generate_session(username: str, config: dict) -> str:
-    return jwt.encode({
-        'aud': 'kub-sso',
-        'sub': username,
-        'exp': utcnow() + SESSION_MAX_AGE,
-    }, config['server']['secret'], algorithm='HS256')
-
-
-def get_session(request, config: dict) -> dict:
-    encoded = request.cookies[SESSION_COOKIE]
-    secret = config['server']['secret']
-    return jwt.decode(encoded, secret, audience='kub-sso', algorithms=['HS256'])
-
-
 def login_validate(request, config: dict) -> bool:
     return (
         request.query.get('response_type') == 'code'
         and request.query.get('client_id') in config['clients']
     )
-
-
-def login_response(request, username, config):
-    client_id = request.query['client_id']
-    client = config['clients'][client_id]
-    return web.Response(status=302, headers={'Location': update_url(
-        client['redirect_uri'],
-        state=request.query.get('state', ''),
-        code=generate_code(
-            request.query['client_id'],
-            username,
-            config,
-        ),
-    )})
 
 
 def render_form(request, *, error: bool):
@@ -82,31 +54,14 @@ def render_form(request, *, error: bool):
     return web.Response(text=template, content_type='text/html')
 
 
-async def login_get(request):
+async def login_handler(request):
     config = request.app['config']
 
     if not login_validate(request, config):
         raise web.HTTPBadRequest
 
-    try:
-        session = get_session(request, config)
-        username = session['sub']
-        user = config['users'][username]
-    except (KeyError, jwt.exceptions.InvalidTokenError) as e:
-        print(e)
+    if request.method != 'POST':
         return render_form(request, error=False)
-
-    if request.query['client_id'] not in user.get('clients', []):
-        raise web.HTTPForbidden
-    else:
-        return login_response(request, username, config)
-
-
-async def login_post(request):
-    config = request.app['config']
-
-    if not login_validate(request, config):
-        raise web.HTTPBadRequest
 
     try:
         post_data = await request.post()
@@ -121,13 +76,17 @@ async def login_post(request):
     elif request.query['client_id'] not in user.get('clients', []):
         raise web.HTTPForbidden
     else:
-        response = login_response(request, username, config)
-        response.set_cookie(
-            SESSION_COOKIE,
-            generate_session(username, config),
-            max_age=SESSION_MAX_AGE.total_seconds(),
-            httponly=True,
-        )
+        client_id = request.query['client_id']
+        client = config['clients'][client_id]
+        response = web.Response(status=302, headers={'Location': update_url(
+            client['redirect_uri'],
+            state=request.query.get('state', ''),
+            code=generate_code(
+                request.query['client_id'],
+                username,
+                config,
+            ),
+        )})
         return response
 
 
