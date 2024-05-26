@@ -1,6 +1,8 @@
 [server]
 # secret used to sign tokens and cookies
 secret = "CHANGEME"
+# issuer for OIDC ID Tokens
+issuer = "https://example.com"
 # used for the roundcube authentication backend
 roundcube_url = "https://webmail.jpberlin.de/roundcube/"
 
