@@ -46,6 +46,7 @@ if __name__ == '__main__':
     with open(args.config) as fh:
         app['config'] = toml.load(fh)
     app.router.add_post('/pam/', pam_handler)
+    app.router.add_get('/discovery/', oidc.discovery_handler)
     app.router.add_get('/login/', oidc.login_handler)
     app.router.add_post('/login/', oidc.login_handler)
     app.router.add_post('/token/', oidc.token_handler)

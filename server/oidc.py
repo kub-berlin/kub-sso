@@ -59,6 +59,20 @@ def render_form(request, *, error: bool):
     return web.Response(text=template, content_type='text/html')
 
 
+async def discovery_handler(request):
+    # https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
+    config = request.app['config']
+    return web.json_response({
+        'issuer': config['server']['issuer'],
+        'authorization_endpoint': str(request.url).replace('/discovery/', '/login/'),
+        'token_endpoint': str(request.url).replace('/discovery/', '/token/'),
+        'scopes_supported': ['openid', 'profile', 'email'],
+        'response_types_supported': ['id_token'],
+        'subject_types_supported': ['pairwise'],
+        'id_token_signing_alg_values_supported': ['RS256'],
+    })
+
+
 async def login_handler(request):
     config = request.app['config']
 
