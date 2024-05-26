@@ -22,4 +22,4 @@ clients = ["example"]
 # - unix: use a local account on the server
 # - roundcube: use the roundcube login at `server.roundcube_url` (`email` must be defined)
 auth = "internal"
-auth_password = "pbkdf2_sha256$500000$PepXJ7amv72VqqI98sTN9w==$G7E7PBgy6wfxQE7iOf7nTogzTUqQQ8OknhzQVLOKuk4="
+auth_password = "pbkdf2_sha256$500000$PepXJ7amv72VqqI98sTN9w==$G7E7PBgy6wfxQE7iOf7nTogzTUqQQ8OknhzQVLOKuk4="  # "password"
