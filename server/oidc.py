@@ -59,18 +59,24 @@ def render_form(request, *, error: bool):
     return web.Response(text=template, content_type='text/html')
 
 
-async def discovery_handler(request):
+async def config_handler(request):
     # https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
     config = request.app['config']
     return web.json_response({
         'issuer': config['server']['issuer'],
-        'authorization_endpoint': str(request.url).replace('/discovery/', '/login/'),
-        'token_endpoint': str(request.url).replace('/discovery/', '/token/'),
+        'authorization_endpoint': config['server']['issuer'] + '/login/',
+        'token_endpoint': config['server']['issuer'] + '/token/',
+        'jwks_uri': config['server']['issuer'] + '/.well-known/openid-jwks/',
+        'grant_types_supported': ['authorization_code'],
         'scopes_supported': ['openid', 'profile', 'email'],
         'response_types_supported': ['id_token'],
         'subject_types_supported': ['pairwise'],
         'id_token_signing_alg_values_supported': ['RS256'],
     })
+
+
+async def jwks_handler(request):
+    return web.json_response({'keys': []})
 
 
 async def login_handler(request):
