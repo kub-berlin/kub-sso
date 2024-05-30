@@ -127,9 +127,13 @@ async def token_handler(request):
         client_id = auth.login
         client = config['clients'][client_id]
     except Exception as e:
-        raise web.HTTPUnauthorized from e
+        return web.json_response({"error": "invalid_request"}, status=401, headers={
+            'WWW-Authenticate': 'Basic',
+        })
     if not backends.check_internal_password(client['secret'], auth.password):
-        raise web.HTTPUnauthorized
+        return web.json_response({"error": "invalid_request"}, status=401, headers={
+            'WWW-Authenticate': 'Basic',
+        })
 
     post_data = await request.post()
     if post_data.get('grant_type') != 'authorization_code':
