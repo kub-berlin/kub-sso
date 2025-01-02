@@ -81,14 +81,14 @@ async def login_handler(request):
 
     try:
         if 'openid' not in request.query['scope'].split():
-            raise ValueError
+            raise ValueError('openid not in scope')
         if request.query['response_type'] != 'code':
-            raise ValueError
+            raise ValueError('response_type is not code')
         client_id = request.query['client_id']
         client = config['clients'][client_id]
         redirect_uri = request.query['redirect_uri']
         if redirect_uri != client['redirect_uri']:
-            raise ValueError
+            raise ValueError('redirect_uri does not match client configuration')
     except Exception as e:
         raise web.HTTPBadRequest from e
 
@@ -106,7 +106,7 @@ async def login_handler(request):
     if not user:
         return render_form(request, error=True)
     elif client_id not in user.get('clients', []):
-        raise web.HTTPForbidden
+        return render_form(request, error=True)
     else:
         return web.Response(status=302, headers={'Location': update_url(
             redirect_uri,
@@ -123,12 +123,10 @@ async def token_handler(request):
         auth = BasicAuth.decode(h)
         client_id = auth.login
         client = config['clients'][client_id]
-    except Exception as e:
-        return web.json_response({"error": "invalid_request"}, status=401, headers={
-            'WWW-Authenticate': 'Basic',
-        })
-    if not backends.check_internal_password(client['secret'], auth.password):
-        return web.json_response({"error": "invalid_request"}, status=401, headers={
+        if not backends.check_internal_password(client['secret'], auth.password):
+            raise ValueError('invalid password')
+    except Exception:
+        return web.json_response({'error': 'invalid_request'}, status=401, headers={
             'WWW-Authenticate': 'Basic',
         })
 
