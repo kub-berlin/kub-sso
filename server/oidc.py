@@ -61,9 +61,9 @@ async def config_handler(request):
     config = request.app['config']
     return web.json_response({
         'issuer': config['server']['issuer'],
-        'authorization_endpoint': config['server']['issuer'] + '/login/',
-        'token_endpoint': config['server']['issuer'] + '/token/',
-        'jwks_uri': config['server']['issuer'] + '/.well-known/openid-jwks/',
+        'authorization_endpoint': config['server']['issuer'] + 'login/',
+        'token_endpoint': config['server']['issuer'] + 'token/',
+        'jwks_uri': config['server']['issuer'] + '.well-known/openid-jwks/',
         'grant_types_supported': ['authorization_code'],
         'scopes_supported': ['openid', 'profile', 'email'],
         'response_types_supported': ['id_token'],
