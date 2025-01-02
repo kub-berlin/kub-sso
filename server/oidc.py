@@ -10,9 +10,6 @@ from aiohttp import web
 
 from . import backends
 
-SESSION_COOKIE = 'kub_sso_session'
-SESSION_MAX_AGE = datetime.timedelta(hours=1)
-
 
 def utcnow():
     return datetime.datetime.now(tz=datetime.timezone.utc)
