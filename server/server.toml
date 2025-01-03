@@ -21,6 +21,7 @@ full_name = "Test User"
 email = "test@example.com"
 unix_id = 1008
 unix_groups = ["test"]
+oidc_groups = ["foo"]
 clients = ["example"]
 
 # NOTE: this is the actual passphrase used to encrypt the user home.

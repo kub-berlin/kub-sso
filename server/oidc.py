@@ -50,8 +50,9 @@ def decode_code(encoded: str, client_id: str, config: dict) -> dict:
     )
 
 
-def encode_id_token(client_id: str, username: str, config: dict) -> str:
+def encode_id_token(client_id: str, username: str, config: dict, extra: dict) -> str:
     return encode_jwt({
+        **extra,
         'iss': config['server']['issuer'],
         'sub': username,
         'aud': client_id,
@@ -167,9 +168,11 @@ async def token_handler(request):
     return web.json_response({
         'access_token': 'noop',
         'token_type': 'Bearer',
-        'id_token': encode_id_token(client_id, username, config),
-        'name': user.get('full_name'),
-        'email': user.get('email'),
+        'id_token': encode_id_token(client_id, username, config, {
+            'name': user.get('full_name'),
+            'email': user.get('email'),
+            'groups': user.get('oidc_groups', []),
+        }),
     }, headers={
         'Cache-Control': 'no-store',
         'Pragma': 'no-cache',
