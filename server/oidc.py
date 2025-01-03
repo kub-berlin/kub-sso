@@ -27,8 +27,9 @@ def update_url(url: str, **params) -> str:
 def encode_jwt(data: dict, config: dict) -> str:
     return jwt.encode(
         data,
-        config['server']['secret'],
-        algorithm='HS256',
+        config['server']['private_key_pem'],
+        algorithm='RS256',
+        headers={'kid': '1'},
     )
 
 
@@ -43,9 +44,9 @@ def encode_code(client_id: str, username: str, config: dict) -> str:
 def decode_code(encoded: str, client_id: str, config: dict) -> dict:
     return jwt.decode(
         encoded,
-        config['server']['secret'],
+        config['server']['public_key_pem'],
         audience=client_id,
-        algorithms=['HS256'],
+        algorithms=['RS256'],
     )
 
 
@@ -84,7 +85,17 @@ async def config_handler(request):
 
 
 async def jwks_handler(request):
-    return web.json_response({'keys': []})
+    config = request.app['config']
+    return web.json_response({
+        'keys': [{
+            'kid': '1',
+            'kty': 'RSA',
+            'alg': 'RS256',
+            'use': 'sig',
+            'e': 'AQAB',
+            'n': config['server']['public_key_n'],
+        }]
+    })
 
 
 async def login_handler(request):
