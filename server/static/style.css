@@ -4,6 +4,7 @@
 
 :root {
     background-color: #eee;
+    accent-color: #005c5e;
     font-family: sans-serif;
     margin-inline: 0.5em;
     font-size: clamp(1rem, calc(1rem + 0.5vi), 1.4rem);
@@ -12,6 +13,7 @@
 body {
     box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.5);
     background: #fff;
+    color: #111;
     max-width: 20em;
     padding: 2em;
     border-radius: 1em;
@@ -39,4 +41,22 @@ button {
 
 .error {
     color: darkred;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        color-scheme: dark;
+        background-color: #000;
+        accent-color: #64adae;
+    }
+    body {
+        background-color: #222;
+        color: #fff;
+    }
+    .error {
+        color: red;
+    }
+    img {
+        filter: invert(100%) hue-rotate(180deg);
+    }
 }
