@@ -24,6 +24,15 @@ def update_url(url: str, **params) -> str:
     return urllib.parse.urlunparse(url_parts)
 
 
+def find_username(username_or_email: str, config: dict) -> str:
+    if '@' not in username_or_email:
+        return username_or_email
+    for username, user in config['users'].items():
+        if user.get('email') == username_or_email:
+            return username
+    raise KeyError(username_or_email)
+
+
 def encode_jwt(data: dict, config: dict) -> str:
     return jwt.encode(
         data,
@@ -120,11 +129,12 @@ async def login_handler(request):
 
     try:
         post_data = await request.post()
-        username = post_data['username']
+        username_or_email = post_data['username']
         password = post_data['password']
     except KeyError:
         return render_form(request, error=True)
 
+    username = find_username(username_or_email, config)
     user = await backends.auth(username, password, config)
     if not user:
         return render_form(request, error=True)
