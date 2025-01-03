@@ -87,7 +87,7 @@ async def check_roundcube_password(url, username, password):
 
 async def _auth(username, password, config):
     user_config = config['users'][username]
-    auth_type = user_config['auth']
+    auth_type = user_config.get('auth', 'internal')
 
     if auth_type == 'internal':
         if check_internal_password(user_config['auth_password'], password):
