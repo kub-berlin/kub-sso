@@ -5,7 +5,6 @@ import datetime
 import urllib.parse
 
 import jwt
-from aiohttp import BasicAuth
 from aiohttp import web
 
 from . import backends
@@ -117,20 +116,18 @@ async def login_handler(request):
 
 async def token_handler(request):
     config = request.app['config']
+    post_data = await request.post()
 
     try:
-        h = request.headers['Authorization']
-        auth = BasicAuth.decode(h)
-        client_id = auth.login
+        client_id = post_data['client_id']
         client = config['clients'][client_id]
-        if not backends.check_internal_password(client['secret'], auth.password):
+        if not backends.check_internal_password(
+            client['secret'], post_data['client_secret']
+        ):
             raise ValueError('invalid password')
-    except Exception:
-        return web.json_response({'error': 'invalid_request'}, status=401, headers={
-            'WWW-Authenticate': 'Basic',
-        })
+    except Exception as e:
+        raise web.HTTPForbidden from e
 
-    post_data = await request.post()
     if post_data.get('grant_type') != 'authorization_code':
         raise web.HTTPBadRequest
 
