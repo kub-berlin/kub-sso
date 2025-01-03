@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def pbkdf2_sha256(password, salt, iterations):
-    hash =  pbkdf2_hmac('sha256', password.encode('utf-8'), salt, iterations)
+    hash = pbkdf2_hmac('sha256', password.encode('utf-8'), salt, iterations)
     return base64.b64encode(hash).decode('ascii')
 
 
