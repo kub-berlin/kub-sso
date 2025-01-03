@@ -72,6 +72,7 @@ async def config_handler(request):
         'issuer': config['server']['issuer'],
         'authorization_endpoint': config['server']['issuer'] + 'login/',
         'token_endpoint': config['server']['issuer'] + 'token/',
+        'userinfo_endpoint': config['server']['issuer'] + 'userinfo/',
         'jwks_uri': config['server']['issuer'] + '.well-known/jwks.json',
         'grant_types_supported': ['authorization_code'],
         'scopes_supported': ['openid', 'profile', 'email'],
@@ -163,7 +164,7 @@ async def token_handler(request):
         raise web.HTTPBadRequest
 
     return web.json_response({
-        'access_token': 'noop',
+        'access_token': encode_jwt({'sub': username}, config),
         'token_type': 'Bearer',
         'id_token': encode_jwt({
             'aud': client_id,
@@ -175,4 +176,26 @@ async def token_handler(request):
     }, headers={
         'Cache-Control': 'no-store',
         'Pragma': 'no-cache',
+    })
+
+
+async def userinfo_handler(request):
+    config = request.app['config']
+
+    try:
+        h = request.headers['Authorization']
+        if not h.startswith('Bearer'):
+            raise ValueError
+        token = decode_jwt(h.removeprefix('Bearer '), config)
+        username = token['sub']
+        user = config['users'][username]
+    except Exception as e:
+        raise web.HTTPForbidden from e
+
+    return web.json_response({
+        'sub': username,
+        'name': user.get('full_name'),
+        'email': user.get('email'),
+        'groups': user.get('oidc_groups', []),
+        'preferred_username': username,
     })

@@ -52,5 +52,6 @@ if __name__ == '__main__':
     app.router.add_get('/login/', oidc.login_handler)
     app.router.add_post('/login/', oidc.login_handler)
     app.router.add_post('/token/', oidc.token_handler)
+    app.router.add_get('/userinfo/', oidc.userinfo_handler)
     app.router.add_static('/static/', app['dir'] / 'static')
     web.run_app(app, host='localhost', port=args.port)
