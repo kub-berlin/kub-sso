@@ -35,39 +35,26 @@ def find_username(username_or_email: str, config: dict) -> str:
 
 def encode_jwt(data: dict, config: dict) -> str:
     return jwt.encode(
-        data,
+        {
+            **data,
+            'iss': config['server']['issuer'],
+            'iat': utcnow(),
+            'exp': utcnow() + datetime.timedelta(seconds=20),
+        },
         config['server']['private_key_pem'],
         algorithm='RS256',
         headers={'kid': '1'},
     )
 
 
-def encode_code(client_id: str, username: str, config: dict) -> str:
-    return encode_jwt({
-        'sub': username,
-        'aud': client_id,
-        'exp': utcnow() + datetime.timedelta(seconds=20),
-    }, config)
-
-
-def decode_code(encoded: str, client_id: str, config: dict) -> dict:
+def decode_jwt(encoded: str, config: dict, **kwargs) -> dict:
     return jwt.decode(
         encoded,
         config['server']['public_key_pem'],
-        audience=client_id,
         algorithms=['RS256'],
+        issuer=config['server']['issuer'],
+        **kwargs,
     )
-
-
-def encode_id_token(client_id: str, username: str, config: dict, extra: dict) -> str:
-    return encode_jwt({
-        **extra,
-        'iss': config['server']['issuer'],
-        'sub': username,
-        'aud': client_id,
-        'exp': utcnow() + datetime.timedelta(seconds=20),
-        'iat': utcnow(),
-    }, config)
 
 
 def render_form(request, *, error: bool):
@@ -144,7 +131,7 @@ async def login_handler(request):
         return web.Response(status=302, headers={'Location': update_url(
             redirect_uri,
             state=request.query.get('state'),
-            code=encode_code(client_id, username, config),
+            code=encode_jwt({'sub': username, 'aud': client_id}, config),
         )})
 
 
@@ -166,7 +153,7 @@ async def token_handler(request):
         raise web.HTTPBadRequest
 
     try:
-        code = decode_code(post_data['code'], client_id, config)
+        code = decode_jwt(post_data['code'], config, audience=client_id)
         username = code['sub']
         user = config['users'][username]
     except (KeyError, jwt.exceptions.InvalidTokenError) as e:
@@ -178,11 +165,13 @@ async def token_handler(request):
     return web.json_response({
         'access_token': 'noop',
         'token_type': 'Bearer',
-        'id_token': encode_id_token(client_id, username, config, {
+        'id_token': encode_jwt({
+            'aud': client_id,
+            'sub': username,
             'name': user.get('full_name'),
             'email': user.get('email'),
             'groups': user.get('oidc_groups', []),
-        }),
+        }, config),
     }, headers={
         'Cache-Control': 'no-store',
         'Pragma': 'no-cache',
