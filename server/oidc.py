@@ -24,27 +24,39 @@ def update_url(url: str, **params) -> str:
     return urllib.parse.urlunparse(url_parts)
 
 
-def generate_code(client_id: str, username: str, config: dict) -> str:
-    return jwt.encode({
+def encode_jwt(data: dict, config: dict) -> str:
+    return jwt.encode(
+        data,
+        config['server']['secret'],
+        algorithm='HS256',
+    )
+
+
+def encode_code(client_id: str, username: str, config: dict) -> str:
+    return encode_jwt({
         'sub': username,
         'aud': client_id,
         'exp': utcnow() + datetime.timedelta(seconds=20),
-    }, config['server']['secret'], algorithm='HS256')
+    }, config)
 
 
-def get_code(encoded: str, client_id: str, config: dict) -> dict:
-    secret = config['server']['secret']
-    return jwt.decode(encoded, secret, audience=client_id, algorithms=['HS256'])
+def decode_code(encoded: str, client_id: str, config: dict) -> dict:
+    return jwt.decode(
+        encoded,
+        config['server']['secret'],
+        audience=client_id,
+        algorithms=['HS256'],
+    )
 
 
-def generate_id_token(client_id: str, username: str, config: dict) -> str:
-    return jwt.encode({
+def encode_id_token(client_id: str, username: str, config: dict) -> str:
+    return encode_jwt({
         'iss': config['server']['issuer'],
         'sub': username,
         'aud': client_id,
         'exp': utcnow() + datetime.timedelta(seconds=20),
         'iat': utcnow(),
-    }, config['server']['secret'], algorithm='HS256')
+    }, config)
 
 
 def render_form(request, *, error: bool):
@@ -62,7 +74,7 @@ async def config_handler(request):
         'issuer': config['server']['issuer'],
         'authorization_endpoint': config['server']['issuer'] + 'login/',
         'token_endpoint': config['server']['issuer'] + 'token/',
-        'jwks_uri': config['server']['issuer'] + '.well-known/openid-jwks/',
+        'jwks_uri': config['server']['issuer'] + '.well-known/jwks.json',
         'grant_types_supported': ['authorization_code'],
         'scopes_supported': ['openid', 'profile', 'email'],
         'response_types_supported': ['id_token'],
@@ -110,7 +122,7 @@ async def login_handler(request):
         return web.Response(status=302, headers={'Location': update_url(
             redirect_uri,
             state=request.query.get('state'),
-            code=generate_code(client_id, username, config),
+            code=encode_code(client_id, username, config),
         )})
 
 
@@ -132,7 +144,7 @@ async def token_handler(request):
         raise web.HTTPBadRequest
 
     try:
-        code = get_code(post_data['code'], client_id, config)
+        code = decode_code(post_data['code'], client_id, config)
         username = code['sub']
         user = config['users'][username]
     except (KeyError, jwt.exceptions.InvalidTokenError) as e:
@@ -144,7 +156,7 @@ async def token_handler(request):
     return web.json_response({
         'access_token': 'noop',
         'token_type': 'Bearer',
-        'id_token': generate_id_token(client_id, username, config),
+        'id_token': encode_id_token(client_id, username, config),
         'name': user.get('full_name'),
         'email': user.get('email'),
     }, headers={
