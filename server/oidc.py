@@ -134,7 +134,11 @@ async def login_handler(request):
         return web.Response(status=303, headers={'Location': update_url(
             redirect_uri,
             state=request.query.get('state'),
-            code=encode_jwt({'sub': username, 'aud': client_id}, config),
+            code=encode_jwt({
+                'sub': username,
+                'aud': client_id,
+                'nonce': request.query.get('nonce'),
+            }, config),
         )})
 
 
@@ -174,6 +178,7 @@ async def token_handler(request):
             'name': user.get('full_name'),
             'email': user.get('email'),
             'groups': user.get('oidc_groups', []),
+            'nonce': code['nonce'],
         }, config),
     }, headers={
         'Cache-Control': 'no-store',
