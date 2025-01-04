@@ -62,7 +62,10 @@ def render_form(request, *, error: bool):
         template = fh.read()
     if error:
         template = template.replace('hidden', '')
-    return web.Response(text=template, content_type='text/html')
+    return web.Response(text=template, content_type='text/html', headers={
+        'X-Frame-Options': 'DENY',
+        'Content-Security-Policy': "default-src 'self'; frame-ancestors 'none'",
+    })
 
 
 async def config_handler(request):
