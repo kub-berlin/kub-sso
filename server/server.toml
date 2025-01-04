@@ -7,9 +7,6 @@ private_key_pem = "-----BEGIN PRIVATE KEY-----\nMIIBUwIBADANBgkqhkiG9w0BAQEFAASC
 public_key_pem = "-----BEGIN PUBLIC KEY-----\nMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAK2r2KfFuXmjfLa7s1NJog3W5Yln/Chq\nHkVq6al7IwE08xjJ9vOsUrEa6WB7x8OR+B2BwnF1885bqk6NFYrtyNkCAwEAAQ==\n-----END PUBLIC KEY-----\n"
 public_key_n = "ravYp8W5eaN8truzU0miDdbliWf8KGoeRWrpqXsjATTzGMn286xSsRrpYHvHw5H4HYHCcXXzzluqTo0Viu3I2Q"
 
-# used for the roundcube authentication backend
-roundcube_url = "https://webmail.jpberlin.de/roundcube/"
-
 [smtp]
 "gmail.com" = "smtp.gmail.com"
 
@@ -35,7 +32,6 @@ ecryptfs_passphrase = "2af2cd69172859a84ed65db06e9b2477"
 # choose one of these authentication backends:
 # - internal: use the `auth_password` field (can be generated with `python3 -m kub_sso --password`)
 # - unix: use a local account on the server
-# - roundcube: use the roundcube login at `server.roundcube_url` (`email` must be defined)
 # - smtp: use SMTP authentication (requires the `email` field on the user and a hostname mapping in the `smtp` section)
 auth = "internal"
 auth_password = "pbkdf2_sha256$500000$PepXJ7amv72VqqI98sTN9w==$G7E7PBgy6wfxQE7iOf7nTogzTUqQQ8OknhzQVLOKuk4="  # "password"

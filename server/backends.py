@@ -67,25 +67,6 @@ async def check_unix_password(username, password):
     return False
 
 
-async def check_roundcube_password(url, username, password):
-    token_pattern = rb'<input type="hidden" name="_token" value="([^"]*)">'
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as r:
-            r.raise_for_status()
-            content = await r.content.read()
-            token = re.search(token_pattern, content)
-            if not token:
-                raise ValueError('Failed to get roundcube token')
-
-        async with session.post(url, allow_redirects=False, data={
-            '_action': 'login',
-            '_user': username,
-            '_pass': password,
-            '_token': token[1].decode('ascii'),
-        }) as r:
-            return r.status == 302 and '_task=mail' in r.headers.get('Location', '')
-
-
 async def check_smtp_password(email, password, config):
     domain = email.split('@', 1)[1]
     hostname = config['smtp'][domain]
@@ -107,10 +88,6 @@ async def _auth(username, password, config):
             return user_config
     elif auth_type == 'unix':
         if await check_unix_password(username, password):
-            return user_config
-    elif auth_type == 'roundcube':
-        url = config['server']['roundcube_url']
-        if await check_roundcube_password(url, user_config['email'], password):
             return user_config
     elif auth_type == 'smtp':
         if await check_smtp_password(user_config['email'], password, config):
