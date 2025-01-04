@@ -6,6 +6,7 @@ pkgdesc='Single sign-on for KuB'
 arch=('all')
 depends=(
 	'python3-aiohttp'
+	'python3-aiosmtplib'
 	'python3-jwt'
 	'python3-toml'
 )

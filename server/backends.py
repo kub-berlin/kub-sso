@@ -8,6 +8,7 @@ from getpass import getpass
 from hashlib import pbkdf2_hmac
 
 import aiohttp
+import aiosmtplib
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +86,18 @@ async def check_roundcube_password(url, username, password):
             return r.status == 302 and '_task=mail' in r.headers.get('Location', '')
 
 
+async def check_smtp_password(email, password, config):
+    domain = email.split('@', 1)[1]
+    hostname = config['smtp'][domain]
+    try:
+        async with aiosmtplib.SMTP(
+            hostname=hostname, username=email, password=password, use_tls=True
+        ):
+            return True
+    except aiosmtplib.errors.SMTPAuthenticationError:
+        return False
+
+
 async def _auth(username, password, config):
     user_config = config['users'][username]
     auth_type = user_config.get('auth', 'internal')
@@ -98,6 +111,9 @@ async def _auth(username, password, config):
     elif auth_type == 'roundcube':
         url = config['server']['roundcube_url']
         if await check_roundcube_password(url, user_config['email'], password):
+            return user_config
+    elif auth_type == 'smtp':
+        if await check_smtp_password(user_config['email'], password, config):
             return user_config
 
     return None
