@@ -80,7 +80,6 @@ async def config_handler(request):
         'grant_types_supported': ['authorization_code'],
         'scopes_supported': ['openid', 'profile', 'email'],
         'response_types_supported': ['id_token'],
-        'subject_types_supported': ['pairwise'],
         'id_token_signing_alg_values_supported': ['RS256'],
     })
 
