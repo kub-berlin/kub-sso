@@ -129,7 +129,7 @@ async def login_handler(request):
     elif client_id not in user.get('clients', []):
         return render_form(request, error=True)
     else:
-        return web.Response(status=302, headers={'Location': update_url(
+        return web.Response(status=303, headers={'Location': update_url(
             redirect_uri,
             state=request.query.get('state'),
             code=encode_jwt({'sub': username, 'aud': client_id}, config),
