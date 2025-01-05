@@ -1,7 +1,9 @@
 # https://datatracker.ietf.org/doc/draft-ietf-oauth-v2-1/
 # https://openid.net/specs/openid-connect-core-1_0.html
 
+import base64
 import datetime
+import hashlib
 import urllib.parse
 
 import jwt
@@ -22,6 +24,11 @@ def update_url(url: str, **params) -> str:
             query[key] = value
     url_parts[4] = urllib.parse.urlencode(query)
     return urllib.parse.urlunparse(url_parts)
+
+
+def s256(s: str) -> str:
+    h = hashlib.sha256(s.encode('ascii')).digest()
+    return base64.urlsafe_b64encode(h).decode('ascii').rstrip('=')
 
 
 def find_username(username_or_email: str, config: dict) -> str:
@@ -81,6 +88,7 @@ async def config_handler(request):
         'scopes_supported': ['openid', 'profile', 'email'],
         'response_types_supported': ['id_token'],
         'id_token_signing_alg_values_supported': ['RS256'],
+        'code_challenge_methods_supported': ['S256'],
     })
 
 
@@ -111,6 +119,11 @@ async def login_handler(request):
         redirect_uri = request.query['redirect_uri']
         if redirect_uri != client['redirect_uri']:
             raise ValueError('redirect_uri does not match client configuration')
+        if (
+            'code_challenge' in request.query
+            and request.query.get('code_challenge_method') != 'S256'
+        ):
+            raise ValueError('unsupported code_challenge_method')
     except Exception as e:
         raise web.HTTPBadRequest from e
 
@@ -138,6 +151,7 @@ async def login_handler(request):
                 'sub': username,
                 'aud': client_id,
                 'nonce': request.query.get('nonce'),
+                'code_challenge': request.query.get('code_challenge'),
             }, config),
         )})
 
@@ -167,6 +181,12 @@ async def token_handler(request):
         raise web.HTTPBadRequest from e
 
     if client_id not in user.get('clients', []):
+        raise web.HTTPBadRequest
+
+    if code.get('code_challenge') and (
+        'code_verifier' not in post_data
+        or code['code_challenge'] != s256(post_data['code_verifier'])
+    ):
         raise web.HTTPBadRequest
 
     return web.json_response({
