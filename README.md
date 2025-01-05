@@ -1,7 +1,7 @@
 # KuB single sign-on
 
 When an organization grows, centralized account management becomes an important
-issues. Unfortunately, the established ecosystem (Microsoft Active Directory,
+issue. Unfortunately, the established ecosystem (Microsoft Active Directory,
 LDAP, Kerberos, SSSD) suffers from a high degree of complexity. This project
 attempts to provide similar features, while being much simpler. It consists of
 three parts:
