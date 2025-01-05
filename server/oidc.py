@@ -152,7 +152,7 @@ async def token_handler(request):
         if not backends.check_internal_password(
             client['secret'], post_data['client_secret']
         ):
-            raise ValueError('invalid password')
+            raise ValueError('invalid client_secret')
     except Exception as e:
         raise web.HTTPForbidden from e
 
