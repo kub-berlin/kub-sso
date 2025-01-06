@@ -75,6 +75,13 @@ def render_form(request, *, error: bool):
     })
 
 
+def error_response(error: str, status: int = 400):
+    return web.json_response({'error': error}, status=status, headers={
+        'Cache-Control': 'no-store',
+        'Pragma': 'no-cache',
+    })
+
+
 async def config_handler(request):
     # https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
     config = request.app['config']
@@ -167,27 +174,25 @@ async def token_handler(request):
             client['secret'], post_data['client_secret']
         ):
             raise ValueError('invalid client_secret')
-    except Exception as e:
-        raise web.HTTPForbidden from e
+    except Exception:
+        return error_response('invalid_client', 401)
 
     if post_data.get('grant_type') != 'authorization_code':
-        raise web.HTTPBadRequest
+        return error_response('unsupported_grant_type')
 
     try:
         code = decode_jwt(post_data['code'], config, audience=client_id)
         username = code['sub']
         user = config['users'][username]
-    except (KeyError, jwt.exceptions.InvalidTokenError) as e:
-        raise web.HTTPBadRequest from e
-
-    if client_id not in user.get('clients', []):
-        raise web.HTTPBadRequest
-
-    if code.get('code_challenge') and (
-        'code_verifier' not in post_data
-        or code['code_challenge'] != s256(post_data['code_verifier'])
-    ):
-        raise web.HTTPBadRequest
+        if client_id not in user.get('clients', []):
+            raise ValueError
+        if code.get('code_challenge') and (
+            'code_verifier' not in post_data
+            or code['code_challenge'] != s256(post_data['code_verifier'])
+        ):
+            raise ValueError
+    except Exception:
+        return error_response('invalid_grant')
 
     return web.json_response({
         'access_token': encode_jwt({'sub': username}, config),
@@ -216,8 +221,10 @@ async def userinfo_handler(request):
         token = decode_jwt(h.removeprefix('Bearer '), config)
         username = token['sub']
         user = config['users'][username]
-    except Exception as e:
-        raise web.HTTPForbidden from e
+    except Exception:
+        return web.Response(status=401, headers={
+            'WWW-Authenticate': 'Bearer error="invalid_token"',
+        })
 
     return web.json_response({
         'sub': username,
