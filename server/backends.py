@@ -1,9 +1,7 @@
 import asyncio
-import base64
 import logging
 import sys
 from getpass import getpass
-from hashlib import pbkdf2_hmac
 
 import aiosmtplib
 import argon2
@@ -12,18 +10,8 @@ logger = logging.getLogger(__name__)
 hasher = argon2.PasswordHasher()
 
 
-def pbkdf2_sha256(password, salt, iterations):
-    hash = pbkdf2_hmac('sha256', password.encode('utf-8'), salt, iterations)
-    return base64.b64encode(hash).decode('ascii')
-
-
 def check_internal_password(encoded, password):
-    if encoded.startswith('pbkdf2_sha256$'):
-        _algo, _iterations, _salt, old_hash = encoded.split('$')
-        iterations = int(_iterations, 10)
-        salt = base64.b64decode(_salt)
-        return pbkdf2_sha256(password, salt, iterations) == old_hash
-    elif encoded.startswith('$argon2id$'):
+    if encoded.startswith('$argon2id$'):
         return hasher.verify(encoded, password)
     else:
         return False
