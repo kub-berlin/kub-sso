@@ -12,10 +12,6 @@ from aiohttp import web
 from . import backends
 
 
-def utcnow():
-    return datetime.datetime.now(tz=datetime.timezone.utc)
-
-
 def update_url(url: str, **params) -> str:
     url_parts = list(urllib.parse.urlparse(url))
     query = urllib.parse.parse_qs(url_parts[4])
@@ -41,12 +37,13 @@ def find_username(username_or_email: str, config: dict) -> str:
 
 
 def encode_jwt(data: dict, config: dict) -> str:
+    now = datetime.datetime.now(tz=datetime.timezone.utc)
     return jwt.encode(
         {
             **data,
             'iss': config['server']['issuer'],
-            'iat': utcnow(),
-            'exp': utcnow() + datetime.timedelta(seconds=20),
+            'iat': now,
+            'exp': now + datetime.timedelta(seconds=20),
         },
         config['server']['private_key_pem'],
         algorithm='RS256',
