@@ -2,12 +2,10 @@ import asyncio
 import base64
 import logging
 import os
-import re
 import sys
 from getpass import getpass
 from hashlib import pbkdf2_hmac
 
-import aiohttp
 import aiosmtplib
 
 logger = logging.getLogger(__name__)
