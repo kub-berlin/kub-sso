@@ -191,6 +191,9 @@ async def token_handler(request):
     except Exception:
         return error_response('invalid_grant')
 
+    if 'code_verifier' in post_data and not code.get('code_challenge'):
+        return error_response('invalid_request')
+
     return web.json_response({
         'access_token': encode_jwt({'sub': username}, config),
         'token_type': 'Bearer',
