@@ -12,7 +12,10 @@ hasher = argon2.PasswordHasher()
 
 def check_internal_password(encoded, password):
     if encoded.startswith('$argon2id$'):
-        return hasher.verify(encoded, password)
+        try:
+            return hasher.verify(encoded, password)
+        except argon2.exceptions.VerificationError:
+            return False
     else:
         return False
 
