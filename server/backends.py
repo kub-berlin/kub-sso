@@ -61,6 +61,9 @@ async def check_smtp_password(email, password, config):
 
 
 async def _auth(username, password, config):
+    if username not in config['users']:
+        return None
+
     user_config = config['users'][username]
     auth_type = user_config.get('auth', 'internal')
 
