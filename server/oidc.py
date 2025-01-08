@@ -127,6 +127,10 @@ async def login_handler(request):
         or 'openid' not in request.query.get('scope', '').split()
         or request.query.get('redirect_uri') != client['redirect_uri']
         or (
+            client.get('code_challenge_required')
+            and 'code_challenge' not in request.query
+        )
+        or (
             'code_challenge' in request.query
             and request.query.get('code_challenge_method') != 'S256'
         )
@@ -197,6 +201,7 @@ async def token_handler(request):
     if (
         code.get('code_challenge')
         or 'code_verifier' in post_data
+        or client.get('code_challenge_required')
     ):
         if (
             'code_verifier' not in post_data
