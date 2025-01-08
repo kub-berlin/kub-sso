@@ -117,22 +117,21 @@ async def login_handler(request):
     config = request.app['config']
 
     try:
-        if 'openid' not in request.query['scope'].split():
-            raise ValueError('openid not in scope')
-        if request.query['response_type'] != 'code':
-            raise ValueError('response_type is not code')
         client_id = request.query['client_id']
         client = config['clients'][client_id]
-        redirect_uri = request.query['redirect_uri']
-        if redirect_uri != client['redirect_uri']:
-            raise ValueError('redirect_uri does not match client configuration')
-        if (
+    except KeyError as e:
+        raise web.HTTPBadRequest from e
+
+    if (
+        request.query.get('response_type') != 'code'
+        or 'openid' not in request.query.get('scope', '').split()
+        or request.query.get('redirect_uri') != client['redirect_uri']
+        or (
             'code_challenge' in request.query
             and request.query.get('code_challenge_method') != 'S256'
-        ):
-            raise ValueError('unsupported code_challenge_method')
-    except Exception as e:
-        raise web.HTTPBadRequest from e
+        )
+    ):
+        raise web.HTTPBadRequest
 
     if request.method != 'POST':
         return render_form(request, error=False)
@@ -152,7 +151,7 @@ async def login_handler(request):
         return render_form(request, error=True)
     else:
         return web.Response(status=303, headers={'Location': update_url(
-            redirect_uri,
+            client['redirect_uri'],
             state=request.query.get('state'),
             code=encode_jwt({
                 'sub': username,
@@ -170,11 +169,12 @@ async def token_handler(request):
     try:
         client_id = post_data['client_id']
         client = config['clients'][client_id]
-        if not backends.check_internal_password(
-            client['secret'], post_data['client_secret']
-        ):
-            raise ValueError('invalid client_secret')
-    except Exception:
+    except KeyError:
+        return error_response('invalid_client', 401)
+
+    if not backends.check_internal_password(
+        client['secret'], post_data['client_secret']
+    ):
         return error_response('invalid_client', 401)
 
     if post_data.get('grant_type') != 'authorization_code':
@@ -182,20 +182,27 @@ async def token_handler(request):
 
     try:
         code = decode_jwt(post_data['code'], config, audience=client_id)
-        username = code['sub']
-        user = config['users'][username]
-        if client_id not in user.get('clients', []):
-            raise ValueError
-        if code.get('code_challenge') and (
-            'code_verifier' not in post_data
-            or code['code_challenge'] != s256(post_data['code_verifier'])
-        ):
-            raise ValueError
-    except Exception:
+    except jwt.exceptions.InvalidTokenError:
         return error_response('invalid_grant')
 
-    if 'code_verifier' in post_data and not code.get('code_challenge'):
-        return error_response('invalid_request')
+    try:
+        username = code['sub']
+        user = config['users'][username]
+    except KeyError:
+        return error_response('invalid_grant')
+
+    if client_id not in user.get('clients', []):
+        return error_response('invalid_grant')
+
+    if (
+        code.get('code_challenge')
+        or 'code_verifier' in post_data
+    ):
+        if (
+            'code_verifier' not in post_data
+            or code.get('code_challenge') != s256(post_data['code_verifier'])
+        ):
+            return error_response('invalid_grant')
 
     return web.json_response({
         'access_token': encode_jwt({'sub': username}, config),
