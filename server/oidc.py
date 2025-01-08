@@ -88,11 +88,13 @@ async def config_handler(request):
         'token_endpoint': config['server']['issuer'] + 'token/',
         'userinfo_endpoint': config['server']['issuer'] + 'userinfo/',
         'jwks_uri': config['server']['issuer'] + '.well-known/jwks.json',
-        'grant_types_supported': ['authorization_code'],
         'scopes_supported': ['openid', 'profile', 'email'],
-        'response_types_supported': ['id_token'],
+        'response_types_supported': ['code'],
+        'grant_types_supported': ['authorization_code'],
         'subject_types_supported': ['public'],
         'id_token_signing_alg_values_supported': ['RS256'],
+        'token_endpoint_auth_methods_supported': ['client_secret_post'],
+        'require_request_uri_registration': True,
         'code_challenge_methods_supported': ['S256'],
     })
 
