@@ -15,7 +15,7 @@ public_key_n = "ravYp8W5eaN8truzU0miDdbliWf8KGoeRWrpqXsjATTzGMn286xSsRrpYHvHw5H4
 secret = "$argon2id$v=19$m=102400,t=2,p=8$K/DVLWP9hIwxl3Dkz8/iIw$5zMAqAUJyFx/0JPqSRE1+g"  # "CHANGEME"
 # see https://www.rfc-editor.org/rfc/rfc6749#section-3.1.2
 redirect_uri = "https://example.com"
-code_challenge_required = false
+code_challenge_required = true
 
 [users.test]
 full_name = "Test User"
