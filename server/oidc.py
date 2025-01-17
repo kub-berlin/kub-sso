@@ -205,6 +205,8 @@ async def token_handler(request):
     ):
         if (
             'code_verifier' not in post_data
+            or len(post_data['code_verifier']) < 43
+            or len(post_data['code_verifier']) > 128
             or code.get('code_challenge') != s256(post_data['code_verifier'])
         ):
             return error_response('invalid_grant')
