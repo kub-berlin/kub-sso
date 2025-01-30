@@ -7,6 +7,7 @@ import hashlib
 import urllib.parse
 
 import jwt
+from aiohttp import BasicAuth
 from aiohttp import web
 
 from . import backends
@@ -93,7 +94,9 @@ async def config_handler(request):
         'grant_types_supported': ['authorization_code'],
         'subject_types_supported': ['public'],
         'id_token_signing_alg_values_supported': ['RS256'],
-        'token_endpoint_auth_methods_supported': ['client_secret_post'],
+        'token_endpoint_auth_methods_supported': [
+            'client_secret_post', 'client_secret_basic'
+        ],
         'require_request_uri_registration': True,
         'code_challenge_methods_supported': ['S256'],
     })
@@ -171,14 +174,19 @@ async def token_handler(request):
     post_data = await request.post()
 
     try:
-        client_id = post_data['client_id']
+        if 'Authorization' in request.headers:
+            h = request.headers['Authorization']
+            auth = BasicAuth.decode(h)
+            client_id = auth.login
+            client_secret = auth.password
+        else:
+            client_id = post_data['client_id']
+            client_secret = post_data['client_secret']
         client = config['clients'][client_id]
-    except KeyError:
+    except Exception:
         return error_response('invalid_client', 401)
 
-    if not backends.check_internal_password(
-        client['secret'], post_data['client_secret']
-    ):
+    if not backends.check_internal_password(client['secret'], client_secret):
         return error_response('invalid_client', 401)
 
     if post_data.get('grant_type') != 'authorization_code':
