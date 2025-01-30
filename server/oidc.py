@@ -88,7 +88,7 @@ async def config_handler(request):
         'token_endpoint': config['server']['issuer'] + 'token/',
         'userinfo_endpoint': config['server']['issuer'] + 'userinfo/',
         'jwks_uri': config['server']['issuer'] + '.well-known/jwks.json',
-        'scopes_supported': ['openid', 'profile', 'email'],
+        'scopes_supported': ['openid', 'email'],
         'response_types_supported': ['code'],
         'grant_types_supported': ['authorization_code'],
         'subject_types_supported': ['public'],
