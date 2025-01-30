@@ -38,6 +38,9 @@ button {
     padding-inline: 0.5em;
     padding-block: 0.2em;
 }
+button {
+    cursor: pointer;
+}
 
 .error {
     color: darkred;
