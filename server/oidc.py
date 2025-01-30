@@ -213,6 +213,7 @@ async def token_handler(request):
 
     return web.json_response({
         'access_token': encode_jwt({'sub': username}, config),
+        'expires_in': 20,
         'token_type': 'Bearer',
         'id_token': encode_jwt({
             'aud': client_id,
