@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 hasher = argon2.PasswordHasher()
 
 
-def check_internal_password(encoded, password):
+def _check_internal_password(encoded, password):
     if encoded.startswith('$argon2id$'):
         try:
             return hasher.verify(encoded, password)
@@ -18,6 +18,13 @@ def check_internal_password(encoded, password):
             return False
     else:
         return False
+
+
+def check_internal_password(encoded, password):
+    if isinstance(encoded, list):
+        return any(_check_internal_password(e, password) for e in encoded)
+    else:
+        return _check_internal_password(encoded, password)
 
 
 def make_internal_password_interactive():
