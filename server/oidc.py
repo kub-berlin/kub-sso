@@ -37,6 +37,15 @@ def find_username(username_or_email: str, config: dict) -> str:
     raise KeyError(username_or_email)
 
 
+def get_allowed_clients(user: dict, config: dict) -> list[str]:
+    if 'clients' in user:
+        return user['clients']
+    elif 'default_clients' in config['server']:
+        return config['server']['default_clients']
+    else:
+        return []
+
+
 def encode_jwt(data: dict, config: dict) -> str:
     now = datetime.datetime.now(tz=datetime.timezone.utc)
     return jwt.encode(
@@ -154,7 +163,7 @@ async def login_handler(request):
     user = await backends.auth(username, password, config)
     if not user:
         return render_form(request, error=True)
-    elif client_id not in user.get('clients', []):
+    elif client_id not in get_allowed_clients(user, config):
         return render_form(request, error=True)
     else:
         return web.Response(status=303, headers={'Location': update_url(
@@ -203,7 +212,7 @@ async def token_handler(request):
     except KeyError:
         return error_response('invalid_grant')
 
-    if client_id not in user.get('clients', []):
+    if client_id not in  get_allowed_clients(user, config):
         return error_response('invalid_grant')
 
     if (
