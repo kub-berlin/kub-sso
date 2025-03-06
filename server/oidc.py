@@ -29,12 +29,11 @@ def s256(s: str) -> str:
 
 
 def find_username(username_or_email: str, config: dict) -> str:
-    if '@' not in username_or_email:
-        return username_or_email
-    for username, user in config['users'].items():
-        if user.get('email') == username_or_email:
-            return username
-    raise KeyError(username_or_email)
+    if '@' in username_or_email:
+        for username, user in config['users'].items():
+            if user.get('email') == username_or_email:
+                return username
+    return username_or_email
 
 
 def get_allowed_clients(user: dict, config: dict) -> list[str]:
