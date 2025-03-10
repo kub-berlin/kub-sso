@@ -4,7 +4,7 @@ After=network-online.target
 
 [Service]
 Type=simple
-ExecStart=python3 -m kub_sso --port 8006
+ExecStart=python3 -u -m kub_sso --port 8006
 Restart=always
 
 # Hardening
