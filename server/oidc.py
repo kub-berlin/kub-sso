@@ -211,7 +211,7 @@ async def token_handler(request):
     except KeyError:
         return error_response('invalid_grant')
 
-    if client_id not in  get_allowed_clients(user, config):
+    if client_id not in get_allowed_clients(user, config):
         return error_response('invalid_grant')
 
     if (
@@ -228,7 +228,10 @@ async def token_handler(request):
             return error_response('invalid_grant')
 
     return web.json_response({
-        'access_token': encode_jwt({'sub': username}, config),
+        'access_token': encode_jwt({
+            'sub': username,
+            'client_id': client_id,
+        }, config),
         'expires_in': 20,
         'token_type': 'Bearer',
         'id_token': encode_jwt({
@@ -254,11 +257,15 @@ async def userinfo_handler(request):
             raise ValueError
         token = decode_jwt(h.removeprefix('Bearer '), config)
         username = token['sub']
+        client_id = token['client_id']
         user = config['users'][username]
     except Exception:
         return web.Response(status=401, headers={
             'WWW-Authenticate': 'Bearer error="invalid_token"',
         })
+
+    if client_id not in get_allowed_clients(user, config):
+        return error_response('invalid_grant')
 
     return web.json_response({
         'sub': username,
