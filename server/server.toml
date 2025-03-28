@@ -37,3 +37,6 @@ ecryptfs_passphrase = "2af2cd69172859a84ed65db06e9b2477"
 # - smtp: use SMTP authentication (requires the `email` field on the user and a hostname mapping in the `smtp` section)
 auth = "internal"
 auth_password = "$argon2id$v=19$m=102400,t=2,p=8$J5VBlZuK+KX4DnY9X44J/A$hZ3Ubnohz4i5LYiuuZm48g"  # "password"
+
+[users.test.client_claims.example]
+foo = "bar"

@@ -45,6 +45,15 @@ def get_allowed_clients(user: dict, config: dict) -> list[str]:
         return []
 
 
+def get_claims(user: dict, client_id: str) -> dict:
+    return {
+        **user.get('client_claims', {}).get(client_id, {}),
+        'name': user.get('full_name'),
+        'email': user.get('email'),
+        'groups': user.get('oidc_groups', []),
+    }
+
+
 def encode_jwt(data: dict, config: dict) -> str:
     now = datetime.datetime.now(tz=datetime.timezone.utc)
     return jwt.encode(
@@ -235,11 +244,9 @@ async def token_handler(request):
         'expires_in': 20,
         'token_type': 'Bearer',
         'id_token': encode_jwt({
+            **get_claims(user, client_id),
             'aud': client_id,
             'sub': username,
-            'name': user.get('full_name'),
-            'email': user.get('email'),
-            'groups': user.get('oidc_groups', []),
             'nonce': code['nonce'],
         }, config),
     }, headers={
@@ -268,9 +275,7 @@ async def userinfo_handler(request):
         return error_response('invalid_grant')
 
     return web.json_response({
+        **get_claims(user, client_id),
         'sub': username,
-        'name': user.get('full_name'),
-        'email': user.get('email'),
-        'groups': user.get('oidc_groups', []),
         'preferred_username': username,
     })
