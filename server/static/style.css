@@ -11,12 +11,12 @@
 }
 
 body {
-    box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.3);
     background: #fff;
     color: #111;
     max-width: 20em;
     padding: 2em;
-    border-radius: 1em;
+    border-radius: 0.5em;
     margin-block: 4em;
     margin-inline: auto;
 }
