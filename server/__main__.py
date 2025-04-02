@@ -42,7 +42,9 @@ if __name__ == '__main__':
     if args.password:
         backends.make_internal_password_interactive()
 
-    app = web.Application()
+    app = web.Application(middlewares=[
+        web.normalize_path_middleware(),
+    ])
     app['dir'] = Path(__file__).parent
     with open(args.config) as fh:
         app['config'] = toml.load(fh)
