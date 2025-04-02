@@ -6,6 +6,7 @@ from aiohttp import web
 
 from . import backends
 from . import oidc
+from . import signup
 
 
 async def pam_handler(request):
@@ -48,7 +49,12 @@ if __name__ == '__main__':
     app['dir'] = Path(__file__).parent
     with open(args.config) as fh:
         app['config'] = toml.load(fh)
+
     app.router.add_post('/pam/', pam_handler)
+
+    app.router.add_get('/signup/', signup.signup_handler)
+    app.router.add_post('/signup/', signup.signup_handler)
+
     app.router.add_get('/.well-known/openid-configuration/', oidc.config_handler)
     app.router.add_get('/.well-known/jwks.json', oidc.jwks_handler)
     app.router.add_get('/login/', oidc.login_handler)
@@ -56,5 +62,7 @@ if __name__ == '__main__':
     app.router.add_post('/token/', oidc.token_handler)
     app.router.add_get('/userinfo/', oidc.userinfo_handler)
     app.router.add_post('/userinfo/', oidc.userinfo_handler)
+
     app.router.add_static('/static/', app['dir'] / 'static')
+
     web.run_app(app, host='localhost', port=args.port)

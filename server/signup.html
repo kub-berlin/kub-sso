@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KuB Login</title>
+    <link rel="stylesheet" href="../static/style.css">
+</head>
+<body>
+    <form method="post">
+        <img src="../static/logo.svg" alt="">
+        <p class="error" hidden>Es ist ein Fehler aufgetreten.</p>
+        <label>
+            Name
+            <input type="text" name="full_name" autocomplete="name" placeholder="Max Mustermensch" required autofocus>
+        </label>
+        <label>
+            E-Mail
+            <input type="email" name="email" autocomplete="email" required>
+        </label>
+        <label>
+            Passwort
+            <input type="password" name="password" autocomplete="new-password" minlength="8" required>
+        </label>
+        <label>
+            Passwort (Bestätigung)
+            <input type="password" name="password_confirm" required>
+        </label>
+        <input type="hidden" name="token" value="{token}">
+        <button>Registrieren</button>
+    <form>
+</body>
+</html>

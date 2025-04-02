@@ -24,7 +24,8 @@ body {
 img,
 label,
 input,
-button {
+button,
+.block-link {
     display: block;
     inline-size: 100%;
 }
@@ -33,13 +34,18 @@ label {
     margin-block-end: 1em;
 }
 input,
-button {
+button,
+.block-link {
     font: inherit;
     padding-inline: 0.5em;
     padding-block: 0.2em;
 }
 button {
     cursor: pointer;
+}
+.block-link {
+    margin-block-start: 0.2em;
+    text-align: center;
 }
 
 .error {

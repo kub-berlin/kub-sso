@@ -54,14 +54,14 @@ def get_claims(user: dict, client_id: str) -> dict:
     }
 
 
-def encode_jwt(data: dict, use: str, config: dict) -> str:
+def encode_jwt(data: dict, use: str, config: dict, *, ttl=20) -> str:
     now = datetime.datetime.now(tz=datetime.timezone.utc)
     return jwt.encode(
         {
             **data,
             'iss': config['server']['issuer'],
             'iat': now,
-            'exp': now + datetime.timedelta(seconds=20),
+            'exp': now + datetime.timedelta(seconds=ttl),
             'x-use': use,
         },
         config['server']['private_key_pem'],
