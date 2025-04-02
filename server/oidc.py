@@ -54,7 +54,7 @@ def get_claims(user: dict, client_id: str) -> dict:
     }
 
 
-def encode_jwt(data: dict, config: dict) -> str:
+def encode_jwt(data: dict, use: str, config: dict) -> str:
     now = datetime.datetime.now(tz=datetime.timezone.utc)
     return jwt.encode(
         {
@@ -62,6 +62,7 @@ def encode_jwt(data: dict, config: dict) -> str:
             'iss': config['server']['issuer'],
             'iat': now,
             'exp': now + datetime.timedelta(seconds=20),
+            'x-use': use,
         },
         config['server']['private_key_pem'],
         algorithm='RS256',
@@ -69,14 +70,17 @@ def encode_jwt(data: dict, config: dict) -> str:
     )
 
 
-def decode_jwt(encoded: str, config: dict, **kwargs) -> dict:
-    return jwt.decode(
+def decode_jwt(encoded: str, use: str, config: dict, **kwargs) -> dict:
+    data = jwt.decode(
         encoded,
         config['server']['public_key_pem'],
         algorithms=['RS256'],
         issuer=config['server']['issuer'],
         **kwargs,
     )
+    if data.get('x-use') != use:
+        raise ValueError(use)
+    return data
 
 
 def render_form(request, *, error: bool):
@@ -182,7 +186,7 @@ async def login_handler(request):
                 'aud': client_id,
                 'nonce': request.query.get('nonce'),
                 'code_challenge': request.query.get('code_challenge'),
-            }, config),
+            }, 'auth_code', config),
         )})
 
 
@@ -210,7 +214,9 @@ async def token_handler(request):
         return error_response('unsupported_grant_type')
 
     try:
-        code = decode_jwt(post_data['code'], config, audience=client_id)
+        code = decode_jwt(
+            post_data['code'], 'auth_code', config, audience=client_id
+        )
     except jwt.exceptions.InvalidTokenError:
         return error_response('invalid_grant')
 
@@ -240,7 +246,7 @@ async def token_handler(request):
         'access_token': encode_jwt({
             'sub': username,
             'client_id': client_id,
-        }, config),
+        }, 'access_token', config),
         'expires_in': 20,
         'token_type': 'Bearer',
         'id_token': encode_jwt({
@@ -248,7 +254,7 @@ async def token_handler(request):
             'aud': client_id,
             'sub': username,
             'nonce': code['nonce'],
-        }, config),
+        }, 'id_token', config),
     }, headers={
         'Cache-Control': 'no-store',
         'Pragma': 'no-cache',
@@ -262,7 +268,7 @@ async def userinfo_handler(request):
         h = request.headers['Authorization']
         if not h.startswith('Bearer'):
             raise ValueError
-        token = decode_jwt(h.removeprefix('Bearer '), config)
+        token = decode_jwt(h.removeprefix('Bearer '), 'access_token', config)
         username = token['sub']
         client_id = token['client_id']
         user = config['users'][username]
