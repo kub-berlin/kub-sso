@@ -62,10 +62,10 @@ async def signup_handler(request):
     if post_data['password'] != post_data.get('password_confirm'):
         return render_form(request, error=True)
 
-    msg = '\n'.join(f'{k}: {v}' for k, v in [
-        ('full name', post_data['full_name']),
+    msg = '\n'.join(f'{k} = "{v}"' for k, v in [
+        ('full_name', post_data['full_name']),
         ('email', post_data['email']),
-        ('password', hasher.hash(post_data['password'])),
+        ('auth_password', hasher.hash(post_data['password'])),
     ])
 
     await send_message(
