@@ -10,6 +10,7 @@ Restart=always
 # Hardening
 DynamicUser=true
 ProtectHome=true
+StateDirectory=kub-sso
 CapabilityBoundingSet=
 SystemCallFilter=@system-service
 RestrictAddressFamilies=AF_INET AF_INET6
