@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-import toml
+import tomllib
 from aiohttp import web
 
 from . import backends
@@ -47,8 +47,8 @@ if __name__ == '__main__':
         web.normalize_path_middleware(),
     ])
     app['dir'] = Path(__file__).parent
-    with open(args.config) as fh:
-        app['config'] = toml.load(fh)
+    with open(args.config, 'rb') as fh:
+        app['config'] = tomllib.load(fh)
 
     app.router.add_post('/pam/', pam_handler)
 

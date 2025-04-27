@@ -9,7 +9,6 @@ depends=(
 	'python3-aiosmtplib'
 	'python3-argon2'
 	'python3-jwt'
-	'python3-toml'
 )
 
 package() {
