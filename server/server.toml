@@ -1,4 +1,3 @@
-[server]
 # issuer for OIDC ID Tokens
 issuer = "https://example.com"
 default_clients = []

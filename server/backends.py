@@ -83,7 +83,7 @@ def check_last_login(username, config):
     s = data.get(username)
     if s:
         last_login = datetime.date.fromisoformat(s)
-        days = config['server'].get('max_days_since_last_login', 30)
+        days = config.get('max_days_since_last_login', 30)
         if last_login + datetime.timedelta(days=days) < today:
             raise ValueError('last_login')
 

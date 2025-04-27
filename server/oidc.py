@@ -39,8 +39,8 @@ def find_username(username_or_email: str, config: dict) -> str:
 def get_allowed_clients(user: dict, config: dict) -> list[str]:
     if 'clients' in user:
         return user['clients']
-    elif 'default_clients' in config['server']:
-        return config['server']['default_clients']
+    elif 'default_clients' in config:
+        return config['default_clients']
     else:
         return []
 
@@ -59,12 +59,12 @@ def encode_jwt(data: dict, use: str, config: dict, *, ttl=20) -> str:
     return jwt.encode(
         {
             **data,
-            'iss': config['server']['issuer'],
+            'iss': config['issuer'],
             'iat': now,
             'exp': now + datetime.timedelta(seconds=ttl),
             'x-use': use,
         },
-        config['server']['private_key_pem'],
+        config['private_key_pem'],
         algorithm='RS256',
         headers={'kid': '1'},
     )
@@ -73,9 +73,9 @@ def encode_jwt(data: dict, use: str, config: dict, *, ttl=20) -> str:
 def decode_jwt(encoded: str, use: str, config: dict, **kwargs) -> dict:
     data = jwt.decode(
         encoded,
-        config['server']['public_key_pem'],
+        config['public_key_pem'],
         algorithms=['RS256'],
-        issuer=config['server']['issuer'],
+        issuer=config['issuer'],
         **kwargs,
     )
     if data.get('x-use') != use:
@@ -105,11 +105,11 @@ async def config_handler(request):
     # https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderMetadata
     config = request.app['config']
     return web.json_response({
-        'issuer': config['server']['issuer'],
-        'authorization_endpoint': config['server']['issuer'] + 'login/',
-        'token_endpoint': config['server']['issuer'] + 'token/',
-        'userinfo_endpoint': config['server']['issuer'] + 'userinfo/',
-        'jwks_uri': config['server']['issuer'] + '.well-known/jwks.json',
+        'issuer': config['issuer'],
+        'authorization_endpoint': config['issuer'] + 'login/',
+        'token_endpoint': config['issuer'] + 'token/',
+        'userinfo_endpoint': config['issuer'] + 'userinfo/',
+        'jwks_uri': config['issuer'] + '.well-known/jwks.json',
         'scopes_supported': ['openid', 'email'],
         'response_types_supported': ['code'],
         'grant_types_supported': ['authorization_code'],
@@ -132,7 +132,7 @@ async def jwks_handler(request):
             'alg': 'RS256',
             'use': 'sig',
             'e': 'AQAB',
-            'n': config['server']['public_key_n'],
+            'n': config['public_key_n'],
         }]
     })
 
