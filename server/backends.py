@@ -72,7 +72,7 @@ async def check_smtp_password(email, password, config):
         return False
 
 
-def check_last_login(username, config):
+def check_last_login(username, user, config):
     if LAST_LOGIN_PATH.exists():
         with LAST_LOGIN_PATH.open() as fh:
             data = json.load(fh)
@@ -80,12 +80,11 @@ def check_last_login(username, config):
         data = {}
 
     today = datetime.date.today()
-    s = data.get(username)
-    if s:
-        last_login = datetime.date.fromisoformat(s)
-        days = config.get('max_days_since_last_login', 30)
-        if last_login + datetime.timedelta(days=days) < today:
-            raise ValueError('last_login')
+    s = data.get(username, user.get('created_at', '1970-01-01'))
+    last_login = datetime.date.fromisoformat(s)
+    days = config.get('max_days_since_last_login', 30)
+    if last_login + datetime.timedelta(days=days) < today:
+        raise ValueError('last_login')
 
     data[username] = today.isoformat()
     with LAST_LOGIN_PATH.open('w') as fh:
@@ -116,7 +115,7 @@ async def auth(username, password, config):
     try:
         user = await _auth(username, password, config)
         if user:
-            check_last_login(username, config)
+            check_last_login(username, user, config)
         return user
     except Exception:
         logger.exception('Authentication failed')

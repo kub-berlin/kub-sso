@@ -31,6 +31,7 @@ unix_id = 1008
 unix_groups = ["test"]
 oidc_groups = ["foo"]
 clients = ["example"]
+created_at = "1970-01-01"
 
 # NOTE: this is the actual passphrase used to encrypt the user home.
 # It is encrypted with the user password and then stored on the devices.
