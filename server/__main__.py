@@ -37,11 +37,16 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--port', type=int, default=8000)
     parser.add_argument('--config', default='/etc/kub-sso/server.toml')
-    parser.add_argument('--password', action='store_true')
+    parser.add_argument('--password', action='store_true', help='generate password hash and exit')  # noqa
+    parser.add_argument('--locked', action='store_true', help='list locked users and exit')  # noqa
     args = parser.parse_args()
 
     if args.password:
-        backends.make_internal_password_interactive()
+        backends.make_internal_password_cmd()
+    elif args.locked:
+        with open(args.config, 'rb') as fh:
+            config = tomllib.load(fh)
+        backends.list_locked_users_cmd(config)
 
     app = web.Application(middlewares=[
         web.normalize_path_middleware(),

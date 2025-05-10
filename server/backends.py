@@ -32,7 +32,7 @@ def check_internal_password(encoded, password):
         return _check_internal_password(encoded, password)
 
 
-def make_internal_password_interactive():
+def make_internal_password_cmd():
     password = getpass('Password: ')
     password_repeat = getpass('Password (again): ')
     if password != password_repeat:
@@ -72,23 +72,36 @@ async def check_smtp_password(email, password, config):
         return False
 
 
-def check_last_login(username, user, config):
+def _get_last_logins():
     if LAST_LOGIN_PATH.exists():
         with LAST_LOGIN_PATH.open() as fh:
-            data = json.load(fh)
-    else:
-        data = {}
+            return json.load(fh)
+    return {}
 
-    today = datetime.date.today()
-    s = data.get(username, user.get('created_at', '1970-01-01'))
+
+def _check_last_login(username, user, last_logins, config):
+    s = last_logins.get(username, user.get('created_at', '1970-01-01'))
     last_login = datetime.date.fromisoformat(s)
     days = config.get('max_days_since_last_login', 30)
-    if last_login + datetime.timedelta(days=days) < today:
+    return last_login + datetime.timedelta(days=days) >= datetime.date.today()
+
+
+def check_last_login(username, user, config):
+    last_logins = _get_last_logins()
+    if not _check_last_login(username, user, last_logins, config):
         raise ValueError('last_login')
 
-    data[username] = today.isoformat()
+    last_logins[username] = datetime.date.today().isoformat()
     with LAST_LOGIN_PATH.open('w') as fh:
-        json.dump(data, fh, indent=2, sort_keys=True)
+        json.dump(last_logins, fh, indent=2, sort_keys=True)
+
+
+def list_locked_users_cmd(config):
+    last_logins = _get_last_logins()
+    for username, user in config['users'].items():
+        if not _check_last_login(username, user, last_logins, config):
+            print(username)
+    sys.exit(0)
 
 
 async def _auth(username, password, config):
