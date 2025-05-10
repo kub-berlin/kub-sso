@@ -5,6 +5,7 @@ import tomllib
 from aiohttp import web
 
 from . import backends
+from . import last_login
 from . import oidc
 from . import signup
 
@@ -46,7 +47,7 @@ if __name__ == '__main__':
     elif args.locked:
         with open(args.config, 'rb') as fh:
             config = tomllib.load(fh)
-        backends.list_locked_users_cmd(config)
+        last_login.list_locked_users_cmd(config)
 
     app = web.Application(middlewares=[
         web.normalize_path_middleware(),
