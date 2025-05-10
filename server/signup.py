@@ -1,3 +1,4 @@
+import datetime
 from email.message import EmailMessage
 
 import aiosmtplib
@@ -65,6 +66,7 @@ async def signup_handler(request):
     msg = '\n'.join(f'{k} = "{v}"' for k, v in [
         ('full_name', post_data['full_name']),
         ('email', post_data['email']),
+        ('created_at', datetime.date.today().isoformat()),
         ('auth_password', hasher.hash(post_data['password'])),
     ])
 
