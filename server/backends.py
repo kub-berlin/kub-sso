@@ -6,6 +6,7 @@ from getpass import getpass
 import aiosmtplib
 import argon2
 
+from .last_login import check_expired
 from .last_login import check_last_login
 
 logger = logging.getLogger(__name__)
@@ -93,6 +94,7 @@ async def auth(username, password, config):
     try:
         user = await _auth(username, password, config)
         if user:
+            check_expired(user)
             check_last_login(username, user, config)
         return user
     except Exception:

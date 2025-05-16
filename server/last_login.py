@@ -23,6 +23,12 @@ def _check_last_login(username, user, last_logins, config):
     return last_login + datetime.timedelta(days=days) >= datetime.date.today()
 
 
+def check_expired(user):
+    s = user.get('expired_at')
+    if s and datetime.date.fromisoformat(s) <= datetime.date.today():
+        raise ValueError('expired_at')
+
+
 def check_last_login(username, user, config):
     last_logins = _get_last_logins()
     if not _check_last_login(username, user, last_logins, config):
