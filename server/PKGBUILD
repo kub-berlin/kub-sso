@@ -24,6 +24,6 @@ package() {
 	install -D -m 644 signup_success.html "$target/signup_success.html"
 	install -D -m 644 static/logo.svg "$target/static/logo.svg"
 	install -D -m 644 static/style.css "$target/static/style.css"
-	install -D -m 644 server.toml "$pkgdir/etc/kub-sso/server.toml"
+	install -D -m 644 server.toml "$pkgdir/usr/lib/kub-sso/server.toml"
 	install -D -m 644 kub-sso.service "$pkgdir/etc/systemd/system/kub-sso.service"
 }
