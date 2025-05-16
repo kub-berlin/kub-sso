@@ -14,7 +14,8 @@ def _get_last_logins():
 
 
 def _check_last_login(username, user, last_logins, config):
-    days = config.get('max_days_since_last_login', 30)
+    fallback = config.get('max_days_since_last_login', 30)
+    days = user.get('max_days_since_last_login', fallback)
     if days is None:
         return True
     s = last_logins.get(username, user.get('created_at', '1970-01-01'))
