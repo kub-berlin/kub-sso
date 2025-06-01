@@ -7,6 +7,7 @@ from .backends import hasher
 from .utils import decode_jwt
 from .utils import encode_jwt
 from .utils import send_message
+from .utils import update_url
 
 
 def render_form(request, *, error: bool):
@@ -47,11 +48,47 @@ async def signup_handler(request):
     if post_data['password'] != post_data.get('password_confirm'):
         return render_form(request, error=True)
 
+    activation_link = update_url(
+        config['issuer'] + 'verify/',
+        token=encode_jwt({
+            'full_name': post_data['full_name'],
+            'email': post_data['email'],
+            'password': hasher.hash(post_data['password']),
+        }, 'signup', config, ttl=60 * 60 * 24 * 7)
+    )
+
+    await send_message(
+        post_data['email'],
+        config['signup_msg_subject'],
+        config['signup_msg_body'].format(
+            full_name=post_data['full_name'],
+            link=activation_link,
+        ),
+        config,
+        reply_to=config['signup_email'],
+    )
+
+    return render_message(request, (
+        'Bitte klicke auf den Bestätigungslink, den wir dir in '
+        'einer E-Mail zugeschickt haben.'
+    ))
+
+
+async def verify_handler(request):
+    config = request.app['config']
+
+    try:
+        data = decode_jwt(request.query['token'], 'signup', config)
+    except Exception:
+        return render_message(
+            request, 'Der Bestätigungslink ist ungültig.', status=400
+        )
+
     msg = '\n'.join(f'{k} = "{v}"' for k, v in [
-        ('full_name', post_data['full_name']),
-        ('email', post_data['email']),
+        ('full_name', data['full_name']),
+        ('email', data['email']),
         ('created_at', datetime.date.today().isoformat()),
-        ('auth_password', hasher.hash(post_data['password'])),
+        ('auth_password', data['password']),
     ])
 
     await send_message(
@@ -59,7 +96,7 @@ async def signup_handler(request):
         config['signup_msg_subject'],
         msg,
         config,
-        reply_to=post_data['email'],
+        reply_to=data['email'],
     )
 
     return render_message(request, (

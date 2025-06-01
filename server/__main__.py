@@ -60,6 +60,7 @@ if __name__ == '__main__':
 
     app.router.add_get('/signup/', signup.signup_handler)
     app.router.add_post('/signup/', signup.signup_handler)
+    app.router.add_get('/verify/', signup.verify_handler)
 
     app.router.add_get('/.well-known/openid-configuration/', oidc.config_handler)
     app.router.add_get('/.well-known/jwks.json', oidc.jwks_handler)
