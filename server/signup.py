@@ -21,10 +21,11 @@ def render_form(request, *, error: bool):
     return web.Response(text=template, content_type='text/html')
 
 
-def render_success(request):
-    with open(request.app['dir'] / 'signup_success.html') as fh:
+def render_message(request, msg: str, *, status: int = 200):
+    with open(request.app['dir'] / 'message.html') as fh:
         template = fh.read()
-    return web.Response(text=template, content_type='text/html')
+    text = template.format(msg=msg)
+    return web.Response(text=text, content_type='text/html', status=status)
 
 
 async def signup_handler(request):
@@ -61,4 +62,7 @@ async def signup_handler(request):
         reply_to=post_data['email'],
     )
 
-    return render_success(request)
+    return render_message(request, (
+        'Wir haben die Anfrage bekommen und kümmern uns so schnell '
+        'wie möglich darum!'
+    ))

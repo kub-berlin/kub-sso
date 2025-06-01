@@ -22,7 +22,7 @@ package() {
 	install -D -m 644 last_login.py "$target/last_login.py"
 	install -D -m 644 form.html "$target/form.html"
 	install -D -m 644 signup.html "$target/signup.html"
-	install -D -m 644 signup_success.html "$target/signup_success.html"
+	install -D -m 644 message.html "$target/message.html"
 	install -D -m 644 static/logo.svg "$target/static/logo.svg"
 	install -D -m 644 static/style.css "$target/static/style.css"
 	install -D -m 644 server.toml "$pkgdir/usr/lib/kub-sso/server.toml"
