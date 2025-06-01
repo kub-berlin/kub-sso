@@ -1,31 +1,12 @@
 import datetime
-from email.message import EmailMessage
 
-import aiosmtplib
 import jwt
 from aiohttp import web
 
 from .backends import hasher
-from .oidc import decode_jwt
-from .oidc import encode_jwt
-
-
-async def send_message(to, subject, body, config, reply_to=None):
-    message = EmailMessage()
-    message['From'] = config['email']['username'],
-    message['To'] = to
-    message['Subject'] = subject
-    if reply_to:
-        message['Reply-To'] = reply_to
-    message.set_content(body)
-
-    return await aiosmtplib.send(
-        message,
-        hostname=config['email']['host'],
-        username=config['email']['username'],
-        password=config['email']['password'],
-        use_tls=True,
-    )
+from .utils import decode_jwt
+from .utils import encode_jwt
+from .utils import send_message
 
 
 def render_form(request, *, error: bool):
@@ -56,7 +37,7 @@ async def signup_handler(request):
 
     try:
         decode_jwt(post_data['token'], 'spam', config)
-    except jwt.exceptions.InvalidTokenError as e:
+    except jwt.exceptions.InvalidTokenError:
         return render_form(request, error=True)
 
     if len(post_data.get('password', '')) < 8:
