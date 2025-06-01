@@ -10,11 +10,13 @@ from .oidc import decode_jwt
 from .oidc import encode_jwt
 
 
-async def send_message(to, subject, body, config):
+async def send_message(to, subject, body, config, reply_to=None):
     message = EmailMessage()
     message['From'] = config['email']['username'],
     message['To'] = to
     message['Subject'] = subject
+    if reply_to:
+        message['Reply-To'] = reply_to
     message.set_content(body)
 
     return await aiosmtplib.send(
@@ -75,6 +77,7 @@ async def signup_handler(request):
         '[kub-sso] New signup request',
         msg,
         config,
+        reply_to=post_data['email'],
     )
 
     return render_success(request)
