@@ -55,7 +55,7 @@ async def signup_handler(request):
 
     await send_message(
         config['signup_email'],
-        '[kub-sso] New signup request',
+        config['signup_msg_subject'],
         msg,
         config,
         reply_to=post_data['email'],

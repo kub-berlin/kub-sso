@@ -1,8 +1,10 @@
 # issuer for OIDC ID Tokens
 issuer = "https://example.com"
 default_clients = []
-signup_email = "signups@example.com"
 max_days_since_last_login = 30  # or null to disable
+
+signup_email = "signups@example.com"
+signup_msg_subject = '[kub-sso] New Signup Request'
 
 # you can use https://mkjwk.org/ to generate a key pair
 private_key_pem = "-----BEGIN PRIVATE KEY-----\nMIIBUwIBADANBgkqhkiG9w0BAQEFAASCAT0wggE5AgEAAkEAravYp8W5eaN8truz\nU0miDdbliWf8KGoeRWrpqXsjATTzGMn286xSsRrpYHvHw5H4HYHCcXXzzluqTo0V\niu3I2QIDAQABAkAufbpZ70xfi6xvHoA645NGMSjxR6zxBLdlzeEPRa9xOtCb3tT+\niujD+fBa2fK49VmfgQHhIsa7kZVBpeF7D4aBAiEA/h3KAM7XSA43/8Bo28oH/GSm\nmkrEgOXZCb2pMC6o1w0CIQCu9WecEA4EsvTTm/RfYiHvRwBCJtvTWwXTTHAMkdYF\n/QIgaphOWyZo0fX88ZBhrAjEbtA9vq0sXrGL6HUhmm+ILaUCIC5wHp8St9XRdiBQ\nja1fi6hKDSyByekwiLxL1pXPg6I1AiB9Xc4n0V+BA/Qrx012PfKQRNAOfdWVMhtG\nzWqDmHeKSA==\n-----END PRIVATE KEY-----\n"
