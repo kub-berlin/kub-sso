@@ -51,7 +51,7 @@ async def signup_handler(request):
     activation_link = update_url(
         config['issuer'] + 'verify/',
         token=encode_jwt({
-            'full_name': post_data['full_name'],
+            'full_name': post_data['full_name'].strip(),
             'email': post_data['email'],
             'password': hasher.hash(post_data['password']),
         }, 'signup', config, ttl=60 * 60 * 24 * 7)
@@ -61,7 +61,7 @@ async def signup_handler(request):
         post_data['email'],
         config['signup_msg_subject'],
         config['signup_msg_body'].format(
-            full_name=post_data['full_name'],
+            full_name=post_data['full_name'].strip(),
             link=activation_link,
         ),
         config,
