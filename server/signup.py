@@ -53,6 +53,7 @@ async def signup_handler(request):
         token=encode_jwt({
             'full_name': post_data['full_name'].strip(),
             'email': post_data['email'],
+            'fg': post_data.get('fg', '').strip(),
             'password': hasher.hash(post_data['password']),
         }, 'signup', config, ttl=60 * 60 * 24 * 7)
     )
@@ -90,6 +91,9 @@ async def verify_handler(request):
         ('created_at', datetime.date.today().isoformat()),
         ('auth_password', data['password']),
     ])
+
+    if data.get('fg'):
+        msg += f'\n\nFachgruppe: {data["fg"]}'
 
     await send_message(
         config['signup_email'],
