@@ -12,7 +12,7 @@ def update_url(url: str, **params) -> str:
     for key, value in params.items():
         if value is not None:
             query[key] = value
-    url_parts[4] = urllib.parse.urlencode(query)
+    url_parts[4] = urllib.parse.urlencode(query, doseq=True)
     return urllib.parse.urlunparse(url_parts)
 
 
