@@ -2,6 +2,7 @@
 # https://openid.net/specs/openid-connect-core-1_0.html
 
 import base64
+import datetime
 import hashlib
 
 import jwt
@@ -56,6 +57,13 @@ def render_form(request, *, error: bool):
     })
 
 
+def render_error(request, status, msg):
+    with open(request.app['dir'] / 'error.html') as fh:
+        template = fh.read()
+    html = template.replace('{msg}', msg)
+    return web.Response(status=status, text=html, content_type='text/html')
+
+
 def error_response(error: str, status: int = 400):
     return web.json_response({'error': error}, status=status, headers={
         'Cache-Control': 'no-store',
@@ -107,6 +115,16 @@ async def login_handler(request):
         client = config['clients'][client_id]
     except KeyError as e:
         raise web.HTTPBadRequest from e
+
+    # inform users that bookmarking the login link does not work
+    today = datetime.date.today().isoformat()
+    if 'day' not in request.query:
+        return web.Response(status=303, headers={'Location': update_url(
+            f'?{request.url.query_string}',
+            day=today,
+        )})
+    elif request.query['day'] != today:
+        return render_error(request, 400, 'Dieser Link ist nicht mehr gültig.')
 
     if (
         request.query.get('response_type') != 'code'
