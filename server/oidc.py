@@ -166,7 +166,7 @@ async def login_handler(request):
                 'aud': client_id,
                 'nonce': request.query.get('nonce'),
                 'code_challenge': request.query.get('code_challenge'),
-            }, 'auth_code', config),
+            }, 'auth_code', config, ttl=60),
         )})
 
 
