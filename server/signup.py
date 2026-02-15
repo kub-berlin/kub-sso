@@ -105,5 +105,6 @@ async def verify_handler(request):
 
     return render_message(request, (
         'Wir haben die Anfrage bekommen und kümmern uns so schnell '
-        'wie möglich darum!'
+        'wie möglich darum! '
+        'Das kann aber ein paar Tage dauern.
     ))
