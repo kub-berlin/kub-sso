@@ -4,6 +4,7 @@
 import base64
 import datetime
 import hashlib
+import html
 
 import jwt
 from aiohttp import BasicAuth
@@ -46,12 +47,14 @@ def get_claims(user: dict, client_id: str) -> dict:
     }
 
 
-def render_form(request, *, error: bool):
+def render_form(request, *, error=None):
     with open(request.app['dir'] / 'form.html') as fh:
         template = fh.read()
     if error:
-        template = template.replace('hidden', '')
-    return web.Response(text=template, content_type='text/html', headers={
+        text = template.format(error=f'<p class="error">{html.escape(error)}</p>')
+    else:
+        text = template.format(error='')
+    return web.Response(text=text, content_type='text/html', headers={
         'X-Frame-Options': 'DENY',
         'Content-Security-Policy': "default-src 'self'; frame-ancestors 'none'",
     })
@@ -142,21 +145,21 @@ async def login_handler(request):
         raise web.HTTPBadRequest
 
     if request.method != 'POST':
-        return render_form(request, error=False)
+        return render_form(request)
 
     try:
         post_data = await request.post()
         username_or_email = post_data['username']
         password = post_data['password']
     except KeyError:
-        return render_form(request, error=True)
+        return render_form(request, error='Das Passwort war nicht korrekt')
 
     username = find_username(username_or_email, config)
     user = await backends.auth(username, password, config)
     if not user:
-        return render_form(request, error=True)
+        return render_form(request, error='Das Passwort war nicht korrekt')
     elif client_id not in get_allowed_clients(user, config):
-        return render_form(request, error=True)
+        return render_form(request, error='Zugriff verweigert')
     else:
         return web.Response(status=303, headers={'Location': update_url(
             client['redirect_uri'],
