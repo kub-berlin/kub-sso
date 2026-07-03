@@ -50,7 +50,7 @@ async def signup_handler(request):
         return render_form(request, error=True)
 
     activation_link = update_url(
-        config['issuer'] + 'verify/',
+        config['issuer'] + 'signup/verify/',
         token=encode_jwt({
             'full_name': post_data['full_name'].strip(),
             'email': post_data['email'],
