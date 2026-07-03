@@ -8,6 +8,7 @@ depends=(
 	'python3-aiohttp'
 	'python3-aiosmtplib'
 	'python3-argon2'
+	'python3-cryptography'
 	'python3-jwt'
 )
 

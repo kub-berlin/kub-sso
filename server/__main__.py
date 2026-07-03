@@ -5,6 +5,7 @@ import tomllib
 from aiohttp import web
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.primitives.serialization import load_pem_public_key
+from cryptography.hazmat.primitives.serialization import load_ssh_private_key
 
 from . import backends
 from . import last_login
@@ -31,6 +32,7 @@ if __name__ == '__main__':
         web.normalize_path_middleware(),
     ])
     app['dir'] = Path(__file__).parent
+
     with open(args.config, 'rb') as fh:
         app['config'] = tomllib.load(fh)
     app['config']['private_key'] = load_pem_private_key(
@@ -38,6 +40,9 @@ if __name__ == '__main__':
     )
     app['config']['public_key'] = load_pem_public_key(
         app['config']['public_key_pem'].encode(), None
+    )
+    app['config']['ssh_ca_key'] = load_ssh_private_key(
+        app['config']['ssh_ca_key'].encode(), None
     )
 
     app.router.add_get('/signup/', signup.signup_handler)
