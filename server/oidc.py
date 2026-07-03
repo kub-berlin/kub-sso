@@ -48,7 +48,7 @@ def get_claims(user: dict, client_id: str) -> dict:
 
 
 def render_form(request, *, error=None):
-    with open(request.app['dir'] / 'form.html') as fh:
+    with open(request.app['dir'] / 'templates' / 'form.html') as fh:
         template = fh.read()
     if error:
         text = template.format(error=f'<p class="error">{html.escape(error)}</p>')
@@ -61,7 +61,7 @@ def render_form(request, *, error=None):
 
 
 def render_error(request, status, msg):
-    with open(request.app['dir'] / 'error.html') as fh:
+    with open(request.app['dir'] / 'templates' / 'error.html') as fh:
         template = fh.read()
     html = template.replace('{msg}', msg)
     return web.Response(status=status, text=html, content_type='text/html')

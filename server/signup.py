@@ -14,7 +14,7 @@ from .utils import update_url
 def render_form(request, *, error: bool):
     config = request.app['config']
 
-    with open(request.app['dir'] / 'signup.html') as fh:
+    with open(request.app['dir'] / 'templates' / 'signup.html') as fh:
         template = fh.read()
     spam_token = encode_jwt({}, 'spam', config, ttl=3600)
     template = template.replace('{token}', spam_token)
@@ -24,7 +24,7 @@ def render_form(request, *, error: bool):
 
 
 def render_message(request, msg: str, *, status: int = 200):
-    with open(request.app['dir'] / 'message.html') as fh:
+    with open(request.app['dir'] / 'templates' / 'message.html') as fh:
         template = fh.read()
     text = template.format(msg=html.escape(msg))
     return web.Response(text=text, content_type='text/html', status=status)
