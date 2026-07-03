@@ -101,3 +101,11 @@ async def auth(username, password, config):
         logger.exception('Authentication failed')
         return None
     return user
+
+
+def find_username(username_or_email: str, config: dict) -> str:
+    if '@' in username_or_email:
+        for username, user in config['users'].items():
+            if user.get('email') == username_or_email:
+                return username
+    return username_or_email

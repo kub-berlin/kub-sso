@@ -21,14 +21,6 @@ def s256(s: str) -> str:
     return base64.urlsafe_b64encode(h).decode('ascii').rstrip('=')
 
 
-def find_username(username_or_email: str, config: dict) -> str:
-    if '@' in username_or_email:
-        for username, user in config['users'].items():
-            if user.get('email') == username_or_email:
-                return username
-    return username_or_email
-
-
 def get_allowed_clients(user: dict, config: dict) -> list[str]:
     if 'clients' in user:
         return user['clients']
@@ -154,7 +146,7 @@ async def login_handler(request):
     except KeyError:
         return render_form(request, error='Das Passwort war nicht korrekt')
 
-    username = find_username(username_or_email, config)
+    username = backends.find_username(username_or_email, config)
     user = await backends.auth(username, password, config)
     if not user:
         return render_form(request, error='Das Passwort war nicht korrekt')
