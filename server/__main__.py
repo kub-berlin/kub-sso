@@ -10,6 +10,7 @@ from . import backends
 from . import last_login
 from . import oidc
 from . import signup
+from . import ssh
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -50,6 +51,8 @@ if __name__ == '__main__':
     app.router.add_post('/token/', oidc.token_handler)
     app.router.add_get('/userinfo/', oidc.userinfo_handler)
     app.router.add_post('/userinfo/', oidc.userinfo_handler)
+
+    app.router.add_post('/ssh/', ssh.ssh_handler)
 
     app.router.add_static('/static/', app['dir'] / 'static')
 

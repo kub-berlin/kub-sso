@@ -18,6 +18,7 @@ package() {
 	install -D -m 644 oidc.py "$target/oidc.py"
 	install -D -m 644 backends.py "$target/backends.py"
 	install -D -m 644 signup.py "$target/signup.py"
+	install -D -m 644 ssh.py "$target/ssh.py"
 	install -D -m 644 utils.py "$target/utils.py"
 	install -D -m 644 last_login.py "$target/last_login.py"
 	install -D -m 644 templates/form.html "$target/templates/form.html"
