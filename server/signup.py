@@ -1,4 +1,5 @@
 import datetime
+import html
 
 import jwt
 from aiohttp import web
@@ -25,7 +26,7 @@ def render_form(request, *, error: bool):
 def render_message(request, msg: str, *, status: int = 200):
     with open(request.app['dir'] / 'message.html') as fh:
         template = fh.read()
-    text = template.format(msg=msg)
+    text = template.format(msg=html.escape(msg))
     return web.Response(text=text, content_type='text/html', status=status)
 
 
