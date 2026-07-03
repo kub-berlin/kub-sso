@@ -3,8 +3,9 @@
 }
 
 :root {
-    background-color: #eee;
-    accent-color: #005c5e;
+    color-scheme: light dark;
+    background-color: light-dark(#eee, #000);
+    accent-color: light-dark(#005c5e, #64adae);
     font-family: sans-serif;
     margin-inline: 0.5em;
     font-size: clamp(1rem, calc(1rem + 0.5vi), 1.4rem);
@@ -12,8 +13,8 @@
 
 body {
     box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.3);
-    background: #fff;
-    color: #111;
+    background: light-dark(#fff, #222);
+    color: light-dark(#111, #fff);
     max-width: 20em;
     padding: 2em;
     border-radius: 0.5em;
@@ -49,22 +50,10 @@ button {
 }
 
 .error {
-    color: darkred;
+    color: light-dark(darkred, red);
 }
 
 @media (prefers-color-scheme: dark) {
-    :root {
-        color-scheme: dark;
-        background-color: #000;
-        accent-color: #64adae;
-    }
-    body {
-        background-color: #222;
-        color: #fff;
-    }
-    .error {
-        color: red;
-    }
     img {
         filter: invert(100%) hue-rotate(180deg);
     }
