@@ -21,7 +21,6 @@ package() {
 	install -D -m 644 utils.py "$target/utils.py"
 	install -D -m 644 last_login.py "$target/last_login.py"
 	install -D -m 644 templates/form.html "$target/templates/form.html"
-	install -D -m 644 templates/error.html "$target/templates/error.html"
 	install -D -m 644 templates/signup.html "$target/templates/signup.html"
 	install -D -m 644 templates/message.html "$target/templates/message.html"
 	install -D -m 644 static/logo.svg "$target/static/logo.svg"
