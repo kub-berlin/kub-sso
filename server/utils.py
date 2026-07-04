@@ -26,7 +26,7 @@ def encode_jwt(data: dict, use: str, config: dict, *, ttl=20) -> str:
             'exp': now + datetime.timedelta(seconds=ttl),
             'x-use': use,
         },
-        config['private_key_pem'],
+        config['private_key'],
         algorithm='RS256',
         headers={'kid': '1'},
     )
@@ -35,7 +35,7 @@ def encode_jwt(data: dict, use: str, config: dict, *, ttl=20) -> str:
 def decode_jwt(encoded: str, use: str, config: dict, **kwargs) -> dict:
     data = jwt.decode(
         encoded,
-        config['public_key_pem'],
+        config['public_key'],
         algorithms=['RS256'],
         issuer=config['issuer'],
         **kwargs,

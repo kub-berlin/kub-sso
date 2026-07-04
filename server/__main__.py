@@ -3,6 +3,8 @@ from pathlib import Path
 
 import tomllib
 from aiohttp import web
+from cryptography.hazmat.primitives.serialization import load_pem_private_key
+from cryptography.hazmat.primitives.serialization import load_pem_public_key
 
 from . import backends
 from . import last_login
@@ -30,6 +32,12 @@ if __name__ == '__main__':
     app['dir'] = Path(__file__).parent
     with open(args.config, 'rb') as fh:
         app['config'] = tomllib.load(fh)
+    app['config']['private_key'] = load_pem_private_key(
+        app['config']['private_key_pem'].encode(), None
+    )
+    app['config']['public_key'] = load_pem_public_key(
+        app['config']['public_key_pem'].encode(), None
+    )
 
     app.router.add_get('/signup/', signup.signup_handler)
     app.router.add_post('/signup/', signup.signup_handler)
