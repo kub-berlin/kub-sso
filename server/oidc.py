@@ -133,6 +133,9 @@ async def login_handler(request):
     if request.method != 'POST':
         return render_form(request)
 
+    if request.headers.get('Sec-Fetch-Site') != 'same-origin':
+        raise web.HTTPForbidden
+
     try:
         post_data = await request.post()
         username_or_email = post_data['username']
