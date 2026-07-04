@@ -44,6 +44,9 @@ if __name__ == '__main__':
     app['config']['ssh_ca_key'] = load_ssh_private_key(
         app['config']['ssh_ca_key'].encode(), None
     )
+    app['config']['clients'][ssh.CLIENT_ID] = {
+        'redirect_uri': app['config']['issuer'] + 'ssh-confirm/',
+    }
 
     app.router.add_get('/signup/', signup.signup_handler)
     app.router.add_post('/signup/', signup.signup_handler)

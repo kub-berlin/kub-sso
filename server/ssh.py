@@ -9,6 +9,7 @@ from cryptography.hazmat.primitives.serialization import SSHCertificateBuilder
 from cryptography.hazmat.primitives.serialization import SSHCertificateType
 from cryptography.hazmat.primitives.serialization import load_ssh_public_key
 
+from .oidc import get_ssh_principals
 from .oidc import s256
 from .utils import decode_jwt
 from .utils import render_message
@@ -17,15 +18,6 @@ from .utils import update_url
 CLIENT_ID = 'ssh'
 SESSION_TTL = 60 * 5
 SESSIONS = {}
-
-
-def get_ssh_principals(user: dict, config: dict) -> list[str]:
-    if 'ssh_principals' in user:
-        return user['ssh_principals']
-    elif 'default_ssh_principals' in config:
-        return config['default_ssh_principals']
-    else:
-        return []
 
 
 def create_cert(key: bytes, username: str, principal: str, config: dict) -> bytes:
