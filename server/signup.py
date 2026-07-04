@@ -7,7 +7,7 @@ from aiohttp import web
 from .backends import hasher
 from .utils import decode_jwt
 from .utils import encode_jwt
-from .utils import send_message
+from .utils import send_mail
 from .utils import update_url
 
 
@@ -59,7 +59,7 @@ async def signup_handler(request):
         }, 'signup', config, ttl=60 * 60 * 24 * 7)
     )
 
-    await send_message(
+    await send_mail(
         post_data['email'],
         config['signup_msg_subject'],
         config['signup_msg_body'].format(
@@ -96,7 +96,7 @@ async def verify_handler(request):
     if data.get('fg'):
         msg += f'\n\nFachgruppe: {data["fg"]}'
 
-    await send_message(
+    await send_mail(
         config['signup_email'],
         config['signup_msg_subject'],
         msg,

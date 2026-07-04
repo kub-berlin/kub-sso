@@ -45,7 +45,7 @@ def decode_jwt(encoded: str, use: str, config: dict, **kwargs) -> dict:
     return data
 
 
-async def send_message(to, subject, body, config, reply_to=None):
+async def send_mail(to, subject, body, config, reply_to=None):
     message = EmailMessage()
     message['From'] = config['email']['username'],
     message['To'] = to
