@@ -53,4 +53,4 @@ if __name__ == '__main__':
 
     app.router.add_static('/static/', app['dir'] / 'static')
 
-    web.run_app(app, host='localhost', port=args.port)
+    web.run_app(app, host='localhost', port=args.port, shutdown_timeout=2)
