@@ -57,7 +57,10 @@ if __name__ == '__main__':
     app.router.add_get('/userinfo/', oidc.userinfo_handler)
     app.router.add_post('/userinfo/', oidc.userinfo_handler)
 
-    app.router.add_post('/ssh/', ssh.ssh_handler)
+    app.router.add_post('/ssh/start/{principal}/', ssh.start_handler)
+    app.router.add_post('/ssh/finish/{token}/', ssh.finish_handler)
+    app.router.add_get('/login-ssh:{token}/', ssh.login_handler)
+    app.router.add_post('/login-ssh:{token}/', ssh.login_handler)
 
     app.router.add_static('/static/', app['dir'] / 'static')
 
