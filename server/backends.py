@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import sys
 from getpass import getpass
@@ -40,24 +39,6 @@ def make_internal_password_cmd():
     sys.exit(0)
 
 
-async def check_unix_password(username, password):
-    proc = await asyncio.create_subprocess_exec(
-        'su', '-c', 'true', username,
-        stdin=asyncio.subprocess.PIPE,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-        env={'LC_ALL': 'C'},
-    )
-    stdout, stderr = await proc.communicate(password.encode())
-    if proc.returncode == 0:
-        if stdout != b'':
-            raise ValueError(stdout)
-        if stderr != b'Password: ':
-            raise ValueError(stderr)
-        return True
-    return False
-
-
 async def check_smtp_password(email, password, config):
     domain = email.split('@', 1)[1]
     hostname = config['smtp'][domain]
@@ -79,9 +60,6 @@ async def _auth(username, password, config):
 
     if auth_type == 'internal':
         if check_internal_password(user_config['auth_password'], password):
-            return user_config
-    elif auth_type == 'unix':
-        if await check_unix_password(username, password):
             return user_config
     elif auth_type == 'smtp':
         if await check_smtp_password(user_config['email'], password, config):
