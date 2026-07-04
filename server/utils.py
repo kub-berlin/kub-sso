@@ -1,9 +1,11 @@
 import datetime
+import html
 import urllib.parse
 from email.message import EmailMessage
 
 import aiosmtplib
 import jwt
+from aiohttp import web
 
 
 def update_url(url: str, **params) -> str:
@@ -61,3 +63,10 @@ async def send_mail(to, subject, body, config, reply_to=None):
         password=config['email']['password'],
         use_tls=True,
     )
+
+
+def render_message(request, msg: str, status: int = 200):
+    with open(request.app['dir'] / 'templates' / 'message.html') as fh:
+        template = fh.read()
+    text = template.format(msg=html.escape(msg))
+    return web.Response(text=text, content_type='text/html', status=status)

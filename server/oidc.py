@@ -12,6 +12,7 @@ from aiohttp import web
 
 from . import backends
 from .utils import decode_jwt
+from .utils import render_message
 from .utils import encode_jwt
 from .utils import update_url
 
@@ -50,13 +51,6 @@ def render_form(request, *, error=None):
         'X-Frame-Options': 'DENY',
         'Content-Security-Policy': "default-src 'self'; frame-ancestors 'none'",
     })
-
-
-def render_error(request, status, msg):
-    with open(request.app['dir'] / 'templates' / 'error.html') as fh:
-        template = fh.read()
-    html = template.replace('{msg}', msg)
-    return web.Response(status=status, text=html, content_type='text/html')
 
 
 def error_response(error: str, status: int = 400):
@@ -119,7 +113,7 @@ async def login_handler(request):
             day=today,
         )})
     elif request.query['day'] != today:
-        return render_error(request, 400, 'Dieser Link ist nicht mehr gültig.')
+        return render_message(request, 'Dieser Link ist nicht mehr gültig.', 400)
 
     if (
         request.query.get('response_type') != 'code'

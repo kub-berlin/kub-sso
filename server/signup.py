@@ -1,5 +1,4 @@
 import datetime
-import html
 
 import jwt
 from aiohttp import web
@@ -7,6 +6,7 @@ from aiohttp import web
 from .backends import hasher
 from .utils import decode_jwt
 from .utils import encode_jwt
+from .utils import render_message
 from .utils import send_mail
 from .utils import update_url
 
@@ -21,13 +21,6 @@ def render_form(request, *, error: bool):
     if error:
         template = template.replace('hidden', '', 1)
     return web.Response(text=template, content_type='text/html')
-
-
-def render_message(request, msg: str, *, status: int = 200):
-    with open(request.app['dir'] / 'templates' / 'message.html') as fh:
-        template = fh.read()
-    text = template.format(msg=html.escape(msg))
-    return web.Response(text=text, content_type='text/html', status=status)
 
 
 async def signup_handler(request):
