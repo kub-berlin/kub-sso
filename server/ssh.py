@@ -1,5 +1,7 @@
 import asyncio
 import datetime
+import secrets
+import time
 
 import jwt
 from aiohttp import web
@@ -7,13 +9,14 @@ from cryptography.hazmat.primitives.serialization import SSHCertificateBuilder
 from cryptography.hazmat.primitives.serialization import SSHCertificateType
 from cryptography.hazmat.primitives.serialization import load_ssh_public_key
 
-from . import backends
-from .oidc import render_form
+from .oidc import s256
 from .utils import decode_jwt
-from .utils import encode_jwt
 from .utils import render_message
+from .utils import update_url
 
-AUTH_FUTURES = {}
+CLIENT_ID = 'ssh'
+SESSION_TTL = 60 * 5
+SESSIONS = {}
 
 
 def get_ssh_principals(user: dict, config: dict) -> list[str]:
@@ -40,13 +43,24 @@ def create_cert(key: bytes, username: str, principal: str, config: dict) -> byte
     )
 
 
-def cleanup_futures(config: dict):
-    tokens = list(AUTH_FUTURES.keys())
-    for token in tokens:
-        try:
-            decode_jwt(token, 'ssh-session', config)
-        except jwt.exceptions.InvalidTokenError:
-            AUTH_FUTURES.pop(token, None)
+def cleanup_sessions():
+    now = time.monotonic()
+    for key, session in list(SESSIONS.items()):
+        if now - session['created_at'] > SESSION_TTL:
+            SESSIONS.pop(key)
+            if not session['future'].done():
+                session['future'].set_exception(TimeoutError())
+
+
+def get_session(key):
+    # A session can be used exactly twice:
+    # Once by confirm_handler and once by sign_handler (in arbitrary order).
+    cleanup_sessions()
+    session = SESSIONS[key]
+    if session['used']:
+        SESSIONS.pop(key)
+    session['used'] = True
+    return session
 
 
 async def start_handler(request):
@@ -56,78 +70,78 @@ async def start_handler(request):
     if len(principal) > 32:
         raise web.HTTPBadRequest
 
-    cleanup_futures(config)
-    if len(AUTH_FUTURES) > 64:
+    cleanup_sessions()
+    if len(SESSIONS) > 64:
         raise web.HTTPServiceUnavailable
 
-    token = encode_jwt({
-        'sub': principal,
-    }, 'ssh-session', config, ttl=60 * 10)
+    session_id = secrets.token_urlsafe(48)
+    code_verifier = secrets.token_urlsafe(48)
 
-    AUTH_FUTURES[token] = asyncio.Future()
+    SESSIONS[session_id] = {
+        'created_at': time.monotonic(),
+        'future': asyncio.Future(),
+        'code_verifier': code_verifier,
+        'principal': principal,
+        'used': False,
+    }
 
-    return web.Response(body=token, content_type='application/jwt')
+    return web.Response(status=303, headers={'Location': update_url(
+        config['issuer'] + 'login/',
+        day=datetime.date.today().isoformat(),
+        client_id=CLIENT_ID,
+        redirect_uri=config['issuer'] + 'ssh-confirm/',
+        response_type='code',
+        scope='openid',
+        state=session_id,
+        code_challenge=s256(code_verifier),
+        code_challenge_method='S256',
+    )})
 
 
-async def finish_handler(request):
+async def confirm_handler(request):
     config = request.app['config']
-    token = request.match_info['token']
 
     try:
-        auth_future = AUTH_FUTURES[token]
+        code = decode_jwt(
+            request.query['code'], 'auth_code', config, audience=CLIENT_ID
+        )
+    except jwt.exceptions.InvalidTokenError:
+        return render_message(request, 'Ungültiger Code', 400)
+
+    try:
+        username = code['sub']
+        user = config['users'][username]
+        session = get_session(request.query['state'])
+    except KeyError:
+        return render_message(request, 'Ungültiger Code', 400)
+
+    if code.get('code_challenge') != s256(session['code_verifier']):
+        return render_message(request, 'Ungültiger Code', 400)
+
+    if session['principal'] not in get_ssh_principals(user, config):
+        return render_message(request, 'Zugriff verweigert', 403)
+
+    session['future'].set_result(username)
+    return render_message(request, 'Authentifizierung erfolgreich')
+
+
+async def sign_handler(request):
+    # SECURITY: a confirmed session ID is sufficient to sign a key
+
+    config = request.app['config']
+    session_id = request.match_info['session']
+
+    try:
+        session = get_session(session_id)
     except KeyError as e:
         raise web.HTTPNotFound from e
 
     try:
-        session = decode_jwt(token, 'ssh-session', config)
-        principal = session['sub']
-    except jwt.exceptions.InvalidTokenError as e:
-        raise web.HTTPBadRequest from e
-
-    try:
-        username = await auth_future
+        username = await session['future']
     except Exception as e:
         raise web.HTTPUnauthorized from e
-    finally:
-        AUTH_FUTURES.pop(token, None)
 
     client_pubkey = await request.read()
-    cert = create_cert(client_pubkey, username, principal, config)
+    cert = create_cert(client_pubkey, username, session['principal'], config)
 
     return web.Response(body=cert, content_type='text/x-ssh-public-key')
-
-
-async def login_handler(request):
-    config = request.app['config']
-    token = request.match_info['token']
-
-    try:
-        auth_future = AUTH_FUTURES[token]
-    except KeyError as e:
-        raise web.HTTPNotFound from e
-
-    try:
-        session = decode_jwt(token, 'ssh-session', config)
-        principal = session['sub']
-    except jwt.exceptions.InvalidTokenError as e:
-        raise web.HTTPBadRequest from e
-
-    if request.method != 'POST':
-        return render_form(request)
-
-    try:
-        post_data = await request.post()
-        username_or_email = post_data['username']
-        password = post_data['password']
-    except KeyError:
-        return render_form(request, error='Das Passwort war nicht korrekt')
-
-    username = backends.find_username(username_or_email, config)
-    user = await backends.auth(username, password, config)
-    if not user:
-        return render_form(request, error='Das Passwort war nicht korrekt')
-    elif principal not in get_ssh_principals(user, config):
-        return render_form(request, error='Zugriff verweigert')
-    else:
-        auth_future.set_result(username)
-        return render_message(request, 'Authentifizierung erfolgreich')
