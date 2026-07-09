@@ -114,7 +114,10 @@ async def confirm_handler(request):
         return render_message(request, 'Zugriff verweigert', 403)
 
     session['future'].set_result(username)
-    return render_message(request, 'Authentifizierung erfolgreich')
+    return render_message(request, (
+        'Authentifizierung erfolgreich. '
+        'Du kannst dieses Fenster jetzt schließen.'
+    ))
 
 
 async def sign_handler(request):
