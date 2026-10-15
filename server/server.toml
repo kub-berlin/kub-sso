@@ -27,6 +27,10 @@ public_key_n = "ravYp8W5eaN8truzU0miDdbliWf8KGoeRWrpqXsjATTzGMn286xSsRrpYHvHw5H4
 # add the public key to TrustedUserCAKeys in /etc/ssh/sshd_config on the target host
 ssh_ca_key = "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW\nQyNTUxOQAAACCzZLzAH9pkFT8GJ1PRa1qiWprsl/UEj7Tt5rF3MqvvKAAAAJB8sGaefLBm\nngAAAAtzc2gtZWQyNTUxOQAAACCzZLzAH9pkFT8GJ1PRa1qiWprsl/UEj7Tt5rF3MqvvKA\nAAAEAf0a+fUhMzgVzlKVvdcgS4/iGROmsDmC/96+k/eY84vrNkvMAf2mQVPwYnU9FrWqJa\nmuyX9QSPtO3msXcyq+8oAAAAC3RvYmlhc0B4MjUwAQI=\n-----END OPENSSH PRIVATE KEY-----\n"
 
+# allow 5 login attempts in 100s
+rate_limit_window = 100
+rate_limit_requests = 5
+
 [email]
 host = "mail.example.com"
 username = "no-reply@mail.example.com"

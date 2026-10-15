@@ -1,3 +1,4 @@
+import datetime
 import logging
 import sys
 from getpass import getpass
@@ -10,6 +11,7 @@ from .last_login import check_last_login
 
 logger = logging.getLogger(__name__)
 hasher = argon2.PasswordHasher()
+rate_limit_data = {}
 
 
 def _check_internal_password(encoded, password):
@@ -51,8 +53,26 @@ async def check_smtp_password(email, password, config):
         return False
 
 
+def check_rate_limit(username, config):
+    now = datetime.datetime.now(tz=datetime.UTC)
+    window = datetime.timedelta(seconds=config.get('rate_limit_window', 100))
+    count = config.get('rate_limit_requests', 5)
+
+    next_use_at = rate_limit_data.get(username, now - window)
+    next_use_at = max(next_use_at, now - window)
+
+    if next_use_at > now:
+        return True
+    else:
+        rate_limit_data[username] = next_use_at + window / count
+        return False
+
+
 async def _auth(username, password, config):
     if username not in config['users']:
+        return None
+
+    if check_rate_limit(username, config):
         return None
 
     user_config = config['users'][username]
