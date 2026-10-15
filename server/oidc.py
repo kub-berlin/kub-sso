@@ -22,13 +22,25 @@ def s256(s: str) -> str:
     return base64.urlsafe_b64encode(h).decode('ascii').rstrip('=')
 
 
-def get_allowed_clients(user: dict, config: dict) -> list[str]:
-    if 'clients' in user:
-        return user['clients']
-    elif 'default_clients' in config:
-        return config['default_clients']
+def get_ssh_principals(user: dict, config: dict) -> list[str]:
+    if 'ssh_principals' in user:
+        return user['ssh_principals']
+    elif 'default_ssh_principals' in config:
+        return config['default_ssh_principals']
     else:
         return []
+
+
+def get_allowed_clients(user: dict, config: dict) -> list[str]:
+    if 'clients' in user:
+        result = user['clients']
+    elif 'default_clients' in config:
+        result = config['default_clients']
+    else:
+        result = []
+    if get_ssh_principals(user, config):
+        result = [*result, 'ssh']
+    return result
 
 
 def get_claims(user: dict, client_id: str) -> dict:

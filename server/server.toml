@@ -23,6 +23,10 @@ private_key_pem = "-----BEGIN PRIVATE KEY-----\nMIIBUwIBADANBgkqhkiG9w0BAQEFAASC
 public_key_pem = "-----BEGIN PUBLIC KEY-----\nMFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAK2r2KfFuXmjfLa7s1NJog3W5Yln/Chq\nHkVq6al7IwE08xjJ9vOsUrEa6WB7x8OR+B2BwnF1885bqk6NFYrtyNkCAwEAAQ==\n-----END PUBLIC KEY-----\n"
 public_key_n = "ravYp8W5eaN8truzU0miDdbliWf8KGoeRWrpqXsjATTzGMn286xSsRrpYHvHw5H4HYHCcXXzzluqTo0Viu3I2Q"
 
+# you can use `ssh-keygen -f ca -N ''` to generate a key pair
+# add the public key to TrustedUserCAKeys in /etc/ssh/sshd_config on the target host
+ssh_ca_key = "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZW\nQyNTUxOQAAACCzZLzAH9pkFT8GJ1PRa1qiWprsl/UEj7Tt5rF3MqvvKAAAAJB8sGaefLBm\nngAAAAtzc2gtZWQyNTUxOQAAACCzZLzAH9pkFT8GJ1PRa1qiWprsl/UEj7Tt5rF3MqvvKA\nAAAEAf0a+fUhMzgVzlKVvdcgS4/iGROmsDmC/96+k/eY84vrNkvMAf2mQVPwYnU9FrWqJa\nmuyX9QSPtO3msXcyq+8oAAAAC3RvYmlhc0B4MjUwAQI=\n-----END OPENSSH PRIVATE KEY-----\n"
+
 [email]
 host = "mail.example.com"
 username = "no-reply@mail.example.com"

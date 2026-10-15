@@ -5,11 +5,13 @@ import tomllib
 from aiohttp import web
 from cryptography.hazmat.primitives.serialization import load_pem_private_key
 from cryptography.hazmat.primitives.serialization import load_pem_public_key
+from cryptography.hazmat.primitives.serialization import load_ssh_private_key
 
 from . import backends
 from . import last_login
 from . import oidc
 from . import signup
+from . import ssh
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -30,6 +32,7 @@ if __name__ == '__main__':
         web.normalize_path_middleware(),
     ])
     app['dir'] = Path(__file__).parent
+
     with open(args.config, 'rb') as fh:
         app['config'] = tomllib.load(fh)
     app['config']['private_key'] = load_pem_private_key(
@@ -38,6 +41,12 @@ if __name__ == '__main__':
     app['config']['public_key'] = load_pem_public_key(
         app['config']['public_key_pem'].encode(), None
     )
+    app['config']['ssh_ca_key'] = load_ssh_private_key(
+        app['config']['ssh_ca_key'].encode(), None
+    )
+    app['config']['clients'][ssh.CLIENT_ID] = {
+        'redirect_uri': app['config']['issuer'] + 'ssh-confirm/',
+    }
 
     app.router.add_get('/signup/', signup.signup_handler)
     app.router.add_post('/signup/', signup.signup_handler)
@@ -50,6 +59,10 @@ if __name__ == '__main__':
     app.router.add_post('/token/', oidc.token_handler)
     app.router.add_get('/userinfo/', oidc.userinfo_handler)
     app.router.add_post('/userinfo/', oidc.userinfo_handler)
+
+    app.router.add_post('/ssh/start/{principal}/', ssh.start_handler)
+    app.router.add_get('/ssh-confirm/', ssh.confirm_handler)
+    app.router.add_post('/ssh/sign/{session}/', ssh.sign_handler)
 
     app.router.add_static('/static/', app['dir'] / 'static')
 
