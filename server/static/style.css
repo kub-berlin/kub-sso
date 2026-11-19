@@ -4,22 +4,17 @@
 
 :root {
     color-scheme: light dark;
-    background-color: light-dark(#eee, #000);
+    background-color: light-dark(#fff, #222);
+    color: light-dark(#111, #fff);
     accent-color: light-dark(#005c5e, #64adae);
     font-family: sans-serif;
-    margin-inline: 0.5em;
+    margin-inline: 0;
     font-size: clamp(1rem, calc(1rem + 0.5vi), 1.4rem);
 }
 
 body {
-    box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.3);
-    background: light-dark(#fff, #222);
-    color: light-dark(#111, #fff);
-    max-width: 20em;
-    padding: 2em;
-    border-radius: 0.5em;
-    margin-block: 4em;
-    margin-inline: auto;
+    margin: 0;
+    padding: 1em;
 }
 
 img,
@@ -56,5 +51,22 @@ button {
 @media (prefers-color-scheme: dark) {
     img {
         filter: invert(100%) hue-rotate(180deg);
+    }
+}
+
+@media (min-width: 24em) {
+    :root {
+        background-color: light-dark(#eee, #000);
+        margin-inline: 0.5em;
+    }
+
+    body {
+        background-color: light-dark(#fff, #222);
+        box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.3);
+        max-inline-size: 20em;
+        border-radius: 0.5em;
+        margin-block: 4em;
+        margin-inline: auto;
+        padding: 2em;
     }
 }
